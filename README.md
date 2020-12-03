@@ -1,7 +1,7 @@
 # Asset Token
 
 Elysia Asset token is an ERC-20 compatible token. It implements compensation management for asset rent and pricing system.
-This contract is phase 0 standalone version. In the future, management system will be sepracted from the contract.
+This contract is phase 0 standalone version. In the future, management system will be seperated from the contract.
 
 ## Contracts
 
@@ -12,7 +12,7 @@ ELToken and EErc20 is an ERC-20 compliant token. ELToken is used for mocking ely
 ### EAccessControl
 
 EAccessControl is OpenZepplin access controle, and used for seperate two roles, admin and whitelisted.
-Admin can set elPrice, price and rewards per block for compensation management for asset and manage whitelist. Whitelisted account can claim their rewards.
+Admin can set elPrice, price and rewards per block and manage whitelist. Whitelisted account can claim their rewards.
 
 ### PriceManager, PriceManagerTest
 
@@ -20,11 +20,11 @@ Asset Token needs USD per ELToken rate for calcurating token price and rewards. 
 
 ### RewardManager, RewardManagerTest
 
-Asset Token distrubutes monthly rent to asset token owners. Reward manager have storage for token owner rewards and internal methods for managing rewards. RewardManagerTest is also a contract that make testing easier.
+Asset Token distrubutes monthly rent to asset token owners. Reward manager have storage for recording owner's reward and internal methods for controlling rewards. RewardManagerTest is also a contract that make testing easier.
 
 ### AssetToken
 
-Asset token inherits EErc20, PriceManager and RewardManager. This contract implements `purchase`, `refund` and `claimReward` and override `_transfer` of ERC20 for managing rewards.
+Asset token inherits EErc20, PriceManager and RewardManager. This contract implements three methods for supporting asset token trading, `purchase`, `refund` and `claimReward`. The contract overrides `_transfer` of ERC20, records reward every time the token is transfered
 
 ## Enviroment Variables
 
