@@ -55,7 +55,7 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
      * - `amount` msg.sender should have more el than elAmount converted from the amount.
      */
     function purchase(uint256 amount) public returns (bool) {
-		checkBalance(msg.sender, address(this), amount);
+        _checkBalance(msg.sender, address(this), amount);
 
         _el.transferFrom(msg.sender, address(this), toElAmount(amount));
         _transfer(address(this), msg.sender, amount);
@@ -73,7 +73,7 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
      * - `amount` this contract should have more el than elAmount converted from the amount.
      */
     function refund(uint256 amount) public returns (bool) {
-        checkBalance(address(this), msg.sender, amount);
+        _checkBalance(address(this), msg.sender, amount);
 
         _transfer(msg.sender, address(this), amount);
         _el.transfer(msg.sender, toElAmount(amount));
@@ -91,7 +91,7 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
      * - `amount` buyer should have more asset token than the amount.
      * - `amount` seller should have more el than elAmount converted from the amount.
      */
-    function checkBalance(address buyer, address seller, uint256 amount) internal {
+    function _checkBalance(address buyer, address seller, uint256 amount) internal {
         require(_el.balanceOf(buyer) > toElAmount(amount), 'AssetToken: Insufficient buyer el balance.');
         require(balanceOf(seller) > amount, 'AssetToken: Insufficient seller balance.');
     }
@@ -113,7 +113,7 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
         _el.transferFrom(address(this), msg.sender, reward);
         _clearReward(msg.sender);
 
-		emit RewardClaimed(msg.sender, reward);
+        emit RewardClaimed(msg.sender, reward);
     }
 
     /**
