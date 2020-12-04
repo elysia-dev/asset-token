@@ -107,10 +107,10 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
      * - `elPrice` cannot be the zero.
      */
     function claimReward() external onlyWhitelisted {
-        uint256 reward = getReward(msg.sender) / _elPrice;
+        uint256 reward = getReward(msg.sender) * 10 ** 18 / _elPrice;
 
         require(reward < _el.balanceOf(address(this)), 'AssetToken: Insufficient seller balance.');
-        _el.transferFrom(address(this), msg.sender, reward);
+        _el.transfer(msg.sender, reward);
         _clearReward(msg.sender);
 
         emit RewardClaimed(msg.sender, reward);
@@ -136,12 +136,14 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
 
         _beforeTokenTransfer(sender, recipient, amount);
 
-        _balances[sender] = _balances[sender].sub(amount, "AssetToken: transfer amount exceeds balance");
-        _balances[recipient] = _balances[recipient].add(amount);
+        require(_balances[sender] >= amount, "AssetToken: transfer amount exceeds balance");
 
         /* RewardManager */
         _saveReward(sender);
         _saveReward(recipient);
+
+        _balances[sender] = _balances[sender] - amount;
+        _balances[recipient] = _balances[recipient].add(amount);
 
         emit Transfer(sender, recipient, amount);
     }

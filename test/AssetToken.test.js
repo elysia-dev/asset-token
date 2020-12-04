@@ -160,7 +160,48 @@ contract('AssetToken', ([deployer, admin, account1, account2]) => {
             })
         })
 
-        // Claim Reward
+		describe('.claimReward', async () => {
+            beforeEach(async () => {
+                await el.transfer(account1, to18DecimalBN(10000).toString(), {from: deployer});
+                await el.transfer(assetToken.address, to18DecimalBN(10000).toString(), {from: deployer});
+                await el.approve(assetToken.address, elTotalSupplyString, {from: account1});
+
+                this.firstBlock = (await assetToken.purchase(20, {from: account1})).receipt.blockNumber;
+
+                await assetToken.addAddressToWhitelist(account1, {from: admin});
+                await el.transfer(account2, await el.balanceOf(account1), {from: account1});
+
+                this.secondBlock = (await assetToken.transfer(account2, 10, {from: account1})).receipt.blockNumber;
+                this.thirdBlock = (await assetToken.transfer(account2, 10, {from: account1})).receipt.blockNumber;
+            })
+
+            it('whitelisted account can claim reward.', async () => {
+                await assetToken.claimReward({from: account1})
+
+                const expectedReward = to18DecimalBN(
+                    20 * (this.secondBlock - this.firstBlock) +
+                    10 * (this.thirdBlock - this.secondBlock)
+                ).mul(new BN(rewardPerBlock))
+                    .div(new BN(totalSupply))
+                    .div(new BN(elPrice));
+
+                expect(await el.balanceOf(account1)).to.be.bignumber.equal(expectedReward);
+                expect(await assetToken.getReward(account1)).to.be.bignumber.equal(new BN(0));
+            })
+
+            it('un whitelisted account cannot claim reward.', async () => {
+                expect(await assetToken.getReward(account2)).not.to.be.bignumber.equal(new BN(0));
+
+                try {
+                    await assetToken.claimReward({from: account2})
+                    assert.fail("The method should have thrown an error");
+                }
+                catch (error) {
+                    assert.include(error.message, 'Restricted');
+                }
+            })
+        })
+
         // Withdrwal el
     })
 })
