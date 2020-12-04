@@ -123,4 +123,6 @@ build/
 .env
 .editorconfig
 *.swp
-*.DS_store
+
+# temp file
+*.DS_Store
