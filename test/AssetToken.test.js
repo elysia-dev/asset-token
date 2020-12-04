@@ -160,7 +160,7 @@ contract('AssetToken', ([deployer, admin, account1, account2]) => {
             })
         })
 
-		describe('.claimReward', async () => {
+        describe('.claimReward', async () => {
             beforeEach(async () => {
                 await el.transfer(account1, to18DecimalBN(10000).toString(), {from: deployer});
                 await el.transfer(assetToken.address, to18DecimalBN(10000).toString(), {from: deployer});
@@ -202,6 +202,27 @@ contract('AssetToken', ([deployer, admin, account1, account2]) => {
             })
         })
 
-        // Withdrwal el
+        describe('.withdrawElToAdmin', async () => {
+            beforeEach(async () => {
+                await el.transfer(assetToken.address, to18DecimalBN(10000).toString(), {from: deployer});
+            })
+
+            it('admin can withdrwal all el.', async () => {
+                await assetToken.withdrawElToAdmin({from: admin});
+
+                expect(await el.balanceOf(assetToken.address)).to.be.bignumber.equal(new BN(0));
+                expect(await el.balanceOf(admin)).to.be.bignumber.equal(new BN(to18DecimalBN(10000)));
+            })
+
+            it('account cannot withdrwa el.', async () => {
+                try {
+                    await assetToken.withdrawElToAdmin({from: account1})
+                    assert.fail("The method should have thrown an error");
+                }
+                catch (error) {
+                    assert.include(error.message, 'Restricted');
+                }
+            })
+        })
     })
 })
