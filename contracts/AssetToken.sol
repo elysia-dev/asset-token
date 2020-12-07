@@ -92,8 +92,8 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
      * - `amount` seller should have more el than elAmount converted from the amount.
      */
     function _checkBalance(address buyer, address seller, uint256 amount) internal {
-        require(_el.balanceOf(buyer) > toElAmount(amount), 'AssetToken: Insufficient buyer el balance.');
-        require(balanceOf(seller) > amount, 'AssetToken: Insufficient seller balance.');
+        require(_el.balanceOf(buyer) >= toElAmount(amount), 'AssetToken: Insufficient buyer el balance.');
+        require(balanceOf(seller) >= amount, 'AssetToken: Insufficient seller balance.');
     }
 
     /**
@@ -109,7 +109,7 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
     function claimReward() external onlyWhitelisted {
         uint256 reward = getReward(msg.sender) * 10 ** 18 / _elPrice;
 
-        require(reward < _el.balanceOf(address(this)), 'AssetToken: Insufficient seller balance.');
+        require(reward <= _el.balanceOf(address(this)), 'AssetToken: Insufficient seller balance.');
         _el.transfer(msg.sender, reward);
         _clearReward(msg.sender);
 
