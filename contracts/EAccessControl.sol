@@ -45,7 +45,7 @@ contract EAccessControl is AccessControl {
         revokeRole(WHITELISTED, account);
     }
 
-    function removeAddressesToWhitelist(address[] memory accounts)
+    function removeAddressesFromWhitelist(address[] memory accounts)
         public
         virtual
         onlyAdmin
