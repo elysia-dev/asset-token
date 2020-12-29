@@ -3,6 +3,10 @@ pragma solidity 0.7.0;
 
 import "./EAccessControl.sol";
 
+interface OraclePrice {
+	function getCurrentPrice() external;
+}
+
 /**
  * @title PriceManager
  * @notice Manage elysia price and asset token price
@@ -15,6 +19,10 @@ contract PriceManager is EAccessControl {
     /// @notice Emitted when price is changed
     event NewPrice(uint256 newPrice);
 
+	/// @notice Emitted when price contract address is changed
+	// event NewPriceContractAddress(address priceContractAddress);
+	event NewSetPriceContract(address priceContractAddress);
+
     // USD per Elysia token
     // decimals: 18
     uint256 public _elPrice;
@@ -22,6 +30,8 @@ contract PriceManager is EAccessControl {
     // USD per Elysia Asset Token
     // decimals: 18
     uint256 public _price;
+
+	OraclePrice public oracle_price;
 
     // TODO
     // Use oracle like chainlink
@@ -49,6 +59,14 @@ contract PriceManager is EAccessControl {
         return true;
     }
 
+	function setOraclePrice() external onlyAdmin returns (bool) {
+		_elPrice = oracle_price.getCurrentPrice();
+
+		emit NewElPrice(_elPrice);
+
+		return true;
+	}
+
     function toElAmount(uint256 amount) public view returns (uint256) {
         uint256 amountEl = (amount * _price * (10**18)) / _elPrice;
         require(
@@ -58,4 +76,12 @@ contract PriceManager is EAccessControl {
 
         return amountEl;
     }
+
+	function setPriceContract(address priceContractAddress_) external onlyAdmin returns (bool) {
+		oracle_price = OraclePrice(priceContractAddress_);
+
+        emit NewSetPriceContract(priceContractAddress_);
+
+        return true;
+	}
 }
