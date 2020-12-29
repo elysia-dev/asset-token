@@ -12,6 +12,10 @@ contract('AssetToken', ([deployer, admin, account1, account2]) => {
     const elPrice = '3' + '0'.repeat(16);
     const rewardPerBlock = '5' + '0'.repeat(14);
     const elTotalSupplyString = '7000000000' + '0'.repeat(18);
+    const latitude = '37' + '0'.repeat(18);
+    const longitude = '127' + '0'.repeat(18);
+    const assetPrice = '5' + '0'.repeat(21);
+    const interestRate = '1' + '0'.repeat(17);
 
     let el;
 
@@ -31,6 +35,10 @@ contract('AssetToken', ([deployer, admin, account1, account2]) => {
                 elPrice,
                 price,
                 rewardPerBlock,
+                latitude,
+                longitude,
+                assetPrice,
+                interestRate,
                 {from : admin}
             )
 
@@ -58,6 +66,10 @@ contract('AssetToken', ([deployer, admin, account1, account2]) => {
                 elPrice,
                 price,
                 rewardPerBlock,
+                latitude,
+                longitude,
+                assetPrice,
+                interestRate,
                 {from : admin}
             )
         })
