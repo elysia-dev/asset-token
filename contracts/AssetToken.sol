@@ -15,6 +15,11 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
     using SafeMath for uint256;
     ERC20 private _el;
 
+    uint256 public _latitude;
+    uint256 public _longitude;
+    uint256 public _assetPrice;
+    uint256 public _interestRate;
+
     /// @notice Emitted when an user claimed reward
     event RewardClaimed(address account, uint256 reward);
 
@@ -27,7 +32,11 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
         address admin_,
         uint256 elPrice_,
         uint256 price_,
-        uint256 rewardPerBlock_
+        uint256 rewardPerBlock_,
+        uint256 latitude_,
+        uint256 longitude_,
+        uint256 assetPrice_,
+        uint256 interestRate_
     ){
         _el = el_;
         _name = name_;
@@ -36,6 +45,10 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
         _elPrice = elPrice_;
         _price = price_;
         _rewardPerBlock = rewardPerBlock_;
+        _latitude = latitude_;
+        _longitude = longitude_;
+        _assetPrice = assetPrice_;
+        _interestRate = interestRate_;
 
         _mint(address(this), amount_);
 
@@ -92,8 +105,8 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
      * - `amount` seller should have more el than elAmount converted from the amount.
      */
     function _checkBalance(address buyer, address seller, uint256 amount) internal {
-        require(_el.balanceOf(buyer) >= toElAmount(amount), 'AssetToken: Insufficient buyer el balance.');
-        require(balanceOf(seller) >= amount, 'AssetToken: Insufficient seller balance.');
+        require(_el.balanceOf(buyer) > toElAmount(amount), 'AssetToken: Insufficient buyer el balance.');
+        require(balanceOf(seller) > amount, 'AssetToken: Insufficient seller balance.');
     }
 
     /**
@@ -109,11 +122,11 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
     function claimReward() external onlyWhitelisted {
         uint256 reward = getReward(msg.sender) * 10 ** 18 / _elPrice;
 
-        require(reward <= _el.balanceOf(address(this)), 'AssetToken: Insufficient seller balance.');
+        require(reward < _el.balanceOf(address(this)), 'AssetToken: Insufficient seller balance.');
         _el.transfer(msg.sender, reward);
         _clearReward(msg.sender);
 
-        emit RewardClaimed(msg.sender, reward);
+		emit RewardClaimed(msg.sender, reward);
     }
 
     /**
