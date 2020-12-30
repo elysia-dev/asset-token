@@ -126,3 +126,6 @@ build/
 
 # temp file
 *.DS_Store
+
+# flatten file
+flat/
