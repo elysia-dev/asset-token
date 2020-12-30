@@ -70,7 +70,7 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
     function purchase(uint256 amount) public returns (bool) {
         _checkBalance(msg.sender, address(this), amount);
 
-        _el.transferFrom(msg.sender, address(this), toElAmount(amount));
+        require(_el.transferFrom(msg.sender, address(this), toElAmount(amount)), 'EL : transferFrom failed');
         _transfer(address(this), msg.sender, amount);
 
         return true;
@@ -88,8 +88,8 @@ contract AssetToken is EErc20, PriceManager, RewardManager {
     function refund(uint256 amount) public returns (bool) {
         _checkBalance(address(this), msg.sender, amount);
 
+        require(_el.transfer(msg.sender, toElAmount(amount)), 'EL : transfer failed');
         _transfer(msg.sender, address(this), amount);
-        _el.transfer(msg.sender, toElAmount(amount));
 
         return true;
     }
