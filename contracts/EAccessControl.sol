@@ -1,16 +1,28 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.0;
+pragma solidity 0.7.4;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+
+interface IEAccessControl {
+    function isWhitelisted(address account) external view returns (bool);
+    function isAdmin(address account) external view returns (bool);
+}
 
 /**
  * @title Elysia's Access Control
  * @notice Control admin and whitelisted account
  * @author Elysia
  */
-contract EAccessControl is AccessControl {
+contract EAccessControl is IEAccessControl, AccessControl {
+
     bytes32 public constant WHITELISTED = keccak256("WHITELISTED");
 
+    constructor() {
+
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setRoleAdmin(WHITELISTED, DEFAULT_ADMIN_ROLE);
+
+        }
     /*** Admin Functions on Whitelist ***/
 
     /**
@@ -61,23 +73,31 @@ contract EAccessControl is AccessControl {
 
     /// @dev Restricted to members of the whitelisted user.
     modifier onlyWhitelisted() {
-        require(isWhitelisted(msg.sender), "Restricted to whitelisted.");
+        require(_isWhitelisted(msg.sender), "Restricted to whitelisted.");
         _;
     }
 
     /// @dev Restricted to members of the admin role.
     modifier onlyAdmin() {
-        require(isAdmin(msg.sender), "Restricted to admin.");
+        require(_isAdmin(msg.sender), "Restricted to admin.");
         _;
     }
 
     /// @dev Return `true` if the account belongs to whitelist.
-    function isWhitelisted(address account) public virtual view returns (bool) {
+    function isWhitelisted(address account) external override view returns (bool) {
+        return _isWhitelisted(account);
+    }
+
+    function _isWhitelisted(address account) internal view returns (bool) {
         return hasRole(WHITELISTED, account);
     }
 
     /// @dev Return `true` if the account belongs to the admin role.
-    function isAdmin(address account) public virtual view returns (bool) {
+    function isAdmin(address account) external override view returns (bool) {
+        return _isAdmin(account);
+    }
+
+    function _isAdmin(address account) internal view returns (bool) {
         return hasRole(DEFAULT_ADMIN_ROLE, account);
     }
 }
