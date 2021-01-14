@@ -10,65 +10,63 @@ import "./IAssetToken.sol";
 import "./Library.sol";
 
 contract AssetToken is IAssetToken, ERC20 {
-    using SafeMath for uint256;
+    using SafeMath for uint;
     using AssetTokenLibrary for RewardLocalVars;
 
-    IEAccessControl private _eAccessControl;
-    IPriceOracle private _ePriceOracle;
+    IEAccessControl public _eAccessControl;
+    IEPriceOracle public _ePriceOracle;
     IERC20 private _el;
 
-    uint256 public _latitude;
-    uint256 public _longitude;
-    uint256 public _assetPrice;
-    uint256 public _interestRate;
+    uint public _latitude;
+    uint public _longitude;
+    uint public _assetPrice;
+    uint public _interestRate;
 
     IERC20 public _refToken; // reftoken should be initialized by EAssetToken
 
     // monthlyRent$/(secondsPerMonth*averageBlockPerSecond)
     // Decimals: 18
-    uint256 public _rewardPerBlock;
+    uint public _rewardPerBlock;
 
     // Account rewards (USD)
     // Decimals: 18
-    mapping(address => uint256) private _rewards;
+    mapping(address => uint) private _rewards;
 
     // Account block numbers
-    mapping(address => uint256) private _blockNumbers;
-
-    // USD per Elysia token
-    // decimals: 18
-    uint256 public _elPrice;
+    mapping(address => uint) private _blockNumbers;
 
     // USD per Elysia Asset Token
     // decimals: 18
-    uint256 public _price;
+    uint public _price;
 
     /// @notice Emitted when an user claimed reward
-    event RewardClaimed(address account, uint256 reward);
+    event RewardClaimed(address account, uint reward);
 
     /// @notice Emitted when rewards per block is changed
-    event NewRewardPerBlock(uint256 newRewardPerBlock);
+    event NewRewardPerBlock(uint newRewardPerBlock);
+
+    /// @notice Emitted when ePriceOracle is changed
+    event NewPriceOracle(address newPriceOracle);
+
+    /// @notice Emitted when eAccessControl is changed
+    event NewAccessControl(address newAccessControl);
 
     constructor(
+        IEPriceOracle ePriceOracle_,
         IEAccessControl eAccessControl_,
         IERC20 el_,
-        uint256 amount_,
-        uint256 elPrice_,
-        uint256 price_,
-        uint256 rewardPerBlock_,
-        uint256 latitude_,
-        uint256 longitude_,
-        uint256 assetPrice_,
-        uint256 interestRate_,
+        uint amount_,
+        uint price_,
+        uint rewardPerBlock_,
+        uint latitude_,
+        uint longitude_,
+        uint assetPrice_,
+        uint interestRate_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
-    ) ERC20 (
-        name_,
-        symbol_) {
-        _eAccessControl = eAccessControl_;
+    ) ERC20 (name_,symbol_) {
         _el = el_;
-        _elPrice = elPrice_;
         _price = price_;
         _rewardPerBlock = rewardPerBlock_;
         _latitude = latitude_;
@@ -90,10 +88,10 @@ contract AssetToken is IAssetToken, ERC20 {
      * - `amount` this contract should have more asset token than the amount.
      * - `amount` msg.sender should have more el than elAmount converted from the amount.
      */
-    function purchase(uint256 amount) external override returns (bool) {
+    function purchase(uint amount) external override returns (bool) {
         _checkBalance(msg.sender, address(this), amount);
 
-        require(_el.transferFrom(msg.sender, address(this), toElAmount(amount)), 'EL : transferFrom failed');
+        require(_el.transferFrom(msg.sender, address(this), _ePriceOracle.toElAmount(amount, _price)), 'EL : transferFrom failed');
         _transfer(address(this), msg.sender, amount);
 
         return true;
@@ -108,15 +106,14 @@ contract AssetToken is IAssetToken, ERC20 {
      * - `amount` msg.sender should have more asset token than the amount.
      * - `amount` this contract should have more el than elAmount converted from the amount.
      */
-    function refund(uint256 amount) external override returns (bool) {
+    function refund(uint amount) external override returns (bool) {
         _checkBalance(address(this), msg.sender, amount);
 
-        require(_el.transfer(msg.sender, toElAmount(amount)), 'EL : transfer failed');
+        require(_el.transfer(msg.sender, _ePriceOracle.toElAmount(amount, _price)), 'EL : transfer failed');
         _transfer(msg.sender, address(this), amount);
 
         return true;
     }
-
 
     /**
      * @dev check if buyer and seller have sufficient balance.
@@ -127,8 +124,8 @@ contract AssetToken is IAssetToken, ERC20 {
      * - `amount` buyer should have more asset token than the amount.
      * - `amount` seller should have more el than elAmount converted from the amount.
      */
-    function _checkBalance(address buyer, address seller, uint256 amount) internal view {
-        require(_el.balanceOf(buyer) > toElAmount(amount), 'AssetToken: Insufficient buyer el balance.');
+    function _checkBalance(address buyer, address seller, uint amount) internal view {
+        require(_el.balanceOf(buyer) > _ePriceOracle.toElAmount(amount, _price), 'AssetToken: Insufficient buyer el balance.');
         require(balanceOf(seller) > amount, 'AssetToken: Insufficient seller balance.');
     }
 
@@ -143,46 +140,13 @@ contract AssetToken is IAssetToken, ERC20 {
      * - `elPrice` cannot be the zero.
      */
     function claimReward() external override onlyWhitelisted {
-        uint256 reward = getReward(msg.sender) * 10 ** 18 / _elPrice;
+        uint reward = getReward(msg.sender).mul(1e18).div(_ePriceOracle.getELPrice());
 
         require(reward < _el.balanceOf(address(this)), 'AssetToken: Insufficient seller balance.');
         _el.transfer(msg.sender, reward);
         _clearReward(msg.sender);
 
 		emit RewardClaimed(msg.sender, reward);
-    }
-
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
-        super._beforeTokenTransfer(from, to, amount);
-
-        require(balanceOf(from) >= amount, "AssetToken: transfer amount exceeds balance");
-
-        /* RewardManager */
-        _saveReward(from);
-        _saveReward(to);
-    }
-
-    /**
-     * @dev Withdraw all El from this contract to admin
-     */
-    function withdrawElToAdmin() public onlyAdmin {
-        _el.transfer(msg.sender, _el.balanceOf(address(this)));
-    }
-
-    function getRewardPerBlock() public view returns (uint256) {
-        return _rewardPerBlock;
-    }
-
-    function setRewardPerBlock(uint256 rewardPerBlock_)
-        external
-        onlyAdmin
-        returns (bool)
-    {
-        _rewardPerBlock = rewardPerBlock_;
-
-        emit NewRewardPerBlock(rewardPerBlock_);
-
-        return true;
     }
 
     /*** Reward functions ***/
@@ -192,7 +156,7 @@ contract AssetToken is IAssetToken, ERC20 {
      * @param account Addresss
      * @return saved reward + new reward
      */
-    function getReward(address account) public view returns (uint256) {
+    function getReward(address account) public view returns (uint) {
 
         RewardLocalVars memory vars = RewardLocalVars({
             newReward: 0,
@@ -208,8 +172,8 @@ contract AssetToken is IAssetToken, ERC20 {
         return vars.getReward();
     }
 
-    // function _getReward(address account) public view returns (uint256) {
-    //     uint256 newReward = 0;
+    // function _getReward(address account) public view returns (uint) {
+    //     uint newReward = 0;
 
     //     if (
     //         _blockNumbers[account] != 0 && block.number > _blockNumbers[account]
@@ -223,6 +187,16 @@ contract AssetToken is IAssetToken, ERC20 {
 
     //     return newReward + _rewards[account];
     // }
+
+    function _beforeTokenTransfer(address from, address to, uint amount) internal virtual override {
+        super._beforeTokenTransfer(from, to, amount);
+
+        require(balanceOf(from) >= amount, "AssetToken: transfer amount exceeds balance");
+
+        /* RewardManager */
+        _saveReward(from);
+        _saveReward(to);
+    }
 
     function _saveReward(address account) internal returns (bool) {
         if (account == address(this)) {
@@ -242,6 +216,39 @@ contract AssetToken is IAssetToken, ERC20 {
         return true;
     }
 
+    /*** Admin functions ***/
+
+    function setEPriceOracle(IEPriceOracle ePriceOracle) external onlyAdmin {
+        _ePriceOracle = ePriceOracle;
+
+        emit NewPriceOracle(address(_ePriceOracle));
+    }
+
+    function setEAccessControl(IEAccessControl eAccessControl) external onlyAdmin {
+        _eAccessControl = eAccessControl;
+
+        emit NewAccessControl(address(_eAccessControl));
+    }
+
+    function setRewardPerBlock(uint rewardPerBlock_)
+        external
+        onlyAdmin
+        returns (bool)
+    {
+        _rewardPerBlock = rewardPerBlock_;
+
+        emit NewRewardPerBlock(rewardPerBlock_);
+
+        return true;
+    }
+
+    /**
+     * @dev Withdraw all El from this contract to admin
+     */
+    function withdrawElToAdmin() public onlyAdmin {
+        _el.transfer(msg.sender, _el.balanceOf(address(this)));
+    }
+
     /// @dev Restricted to members of the whitelisted user.
     modifier onlyWhitelisted() {
         require(_eAccessControl.isWhitelisted(msg.sender), "Restricted to whitelisted.");
@@ -252,25 +259,5 @@ contract AssetToken is IAssetToken, ERC20 {
     modifier onlyAdmin() {
         require(_eAccessControl.isAdmin(msg.sender), "Restricted to admin.");
         _;
-    }
-
-    function toElAmount(uint amount) public view returns (uint) {
-
-        ExchangeLocalVars memory vars = ExchangeLocalVars({
-            currencyPrice: _ePriceOracle.getELPrice(),
-            assetTokenPrice: _price
-        });
-
-        return vars.toAmount(amount);
-    }
-
-    function toEthAmount(uint amount) public view returns (uint) {
-
-        ExchangeLocalVars memory vars = ExchangeLocalVars({
-            currencyPrice: _ePriceOracle.getEthPrice(),
-            assetTokenPrice: _price
-        });
-
-        return vars.toAmount(amount);
     }
 }

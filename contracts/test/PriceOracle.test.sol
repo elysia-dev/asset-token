@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./Library.sol";
+import "../Library.sol";
 
 interface IEPriceOracle {
 
@@ -22,10 +20,7 @@ interface IEPriceOracle {
 contract EPriceOracle is IEPriceOracle {
 
     using SafeCast for int;
-    using SafeMath for uint;
     using AssetTokenLibrary for ExchangeLocalVars;
-
-    AggregatorV3Interface internal priceFeed;
 
     /// @notice Emitted when el Price is changed
     event NewElPrice(uint256 newElPrice);
@@ -55,15 +50,9 @@ contract EPriceOracle is IEPriceOracle {
     }
 
     function _getEthPrice() internal view returns (uint) {
-        (
-            uint80 roundID,
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = priceFeed.latestRoundData();
+        int 
 
-        return price.toUint256().mul(1e10);
+        return price.toUint256();
     }
 
     function setElPrice(uint256 elPrice_) external returns (bool) {

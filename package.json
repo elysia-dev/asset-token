@@ -17,5 +17,8 @@
     "truffle-hdwallet-provider": "^1.0.17",
     "truffle-hdwallet-provider-privkey": "^0.3.0",
     "zeppelin-solidity": "^1.12.0"
+  },
+  "devDependencies": {
+    "hardhat": "^2.0.7"
   }
 }
