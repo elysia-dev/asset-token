@@ -67,7 +67,7 @@ contract EPriceOracle is IEPriceOracle {
     }
 
     function setElPrice(uint256 elPrice_) external returns (bool) {
-        require(msg.sender == admin, "Only admin can set EL price");
+        require(msg.sender == admin, "Restricted to admin.");
 
         emit NewElPrice(elPrice_);
 
