@@ -6,6 +6,10 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 interface IEAccessControl {
     function isWhitelisted(address account) external view returns (bool);
     function isAdmin(address account) external view returns (bool);
+    function addAddressToWhitelist(address account) external;
+    function addAddressesToWhitelist(address[] memory accounts) external;
+    function removeAddressFromWhitelist(address account) external;
+    function removeAddressesFromWhitelist(address[] memory accounts) external;
 }
 
 /**
@@ -29,13 +33,12 @@ contract EAccessControl is IEAccessControl, AccessControl {
      * @notice Add an 'account' to the whitelist
      * @param account The address of account to add
      */
-    function addAddressToWhitelist(address account) public virtual onlyAdmin {
+    function addAddressToWhitelist(address account) external override onlyAdmin {
         grantRole(WHITELISTED, account);
     }
 
     function addAddressesToWhitelist(address[] memory accounts)
-        public
-        virtual
+        external
         onlyAdmin
     {
         uint256 len = accounts.length;
@@ -50,16 +53,16 @@ contract EAccessControl is IEAccessControl, AccessControl {
      * @param account The address of account to remove
      */
     function removeAddressFromWhitelist(address account)
-        public
-        virtual
+        external
+        override
         onlyAdmin
     {
         revokeRole(WHITELISTED, account);
     }
 
     function removeAddressesFromWhitelist(address[] memory accounts)
-        public
-        virtual
+        external
+        override
         onlyAdmin
     {
         uint256 len = accounts.length;

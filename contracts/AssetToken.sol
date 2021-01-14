@@ -4,12 +4,13 @@ pragma solidity 0.7.4;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./PriceOracle.sol";
 import "./EAccessControl.sol";
 import "./IAssetToken.sol";
 import "./Library.sol";
 
-contract AssetToken is IAssetToken, ERC20 {
+contract AssetToken is IAssetToken, ERC20, Pausable {
     using SafeMath for uint;
     using AssetTokenLibrary for RewardLocalVars;
 
@@ -88,7 +89,7 @@ contract AssetToken is IAssetToken, ERC20 {
      * - `amount` this contract should have more asset token than the amount.
      * - `amount` msg.sender should have more el than elAmount converted from the amount.
      */
-    function purchase(uint amount) external override returns (bool) {
+    function purchase(uint amount) external override whenNotPaused returns (bool) {
         _checkBalance(msg.sender, address(this), amount);
 
         require(_el.transferFrom(msg.sender, address(this), _ePriceOracle.toElAmount(amount, _price)), 'EL : transferFrom failed');
@@ -106,7 +107,7 @@ contract AssetToken is IAssetToken, ERC20 {
      * - `amount` msg.sender should have more asset token than the amount.
      * - `amount` this contract should have more el than elAmount converted from the amount.
      */
-    function refund(uint amount) external override returns (bool) {
+    function refund(uint amount) external override whenNotPaused returns (bool) {
         _checkBalance(address(this), msg.sender, amount);
 
         require(_el.transfer(msg.sender, _ePriceOracle.toElAmount(amount, _price)), 'EL : transfer failed');
@@ -139,7 +140,7 @@ contract AssetToken is IAssetToken, ERC20 {
      * Requirements:
      * - `elPrice` cannot be the zero.
      */
-    function claimReward() external override onlyWhitelisted {
+    function claimReward() external override onlyWhitelisted whenNotPaused {
         uint reward = getReward(msg.sender).mul(1e18).div(_ePriceOracle.getELPrice());
 
         require(reward < _el.balanceOf(address(this)), 'AssetToken: Insufficient seller balance.');
@@ -247,6 +248,14 @@ contract AssetToken is IAssetToken, ERC20 {
      */
     function withdrawElToAdmin() public onlyAdmin {
         _el.transfer(msg.sender, _el.balanceOf(address(this)));
+    }
+
+    function pause() public onlyAdmin {
+        _pause();
+    }
+
+    function unpause() public onlyAdmin {
+        _unpause();
     }
 
     /// @dev Restricted to members of the whitelisted user.
