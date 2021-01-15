@@ -5,6 +5,8 @@ import "../Library.sol";
 
 contract LibraryTest {
 
+    using AssetTokenLibrary for RewardLocalVars;
+
     function getReward(
         uint accountReward,
         uint accountBalance,
@@ -25,7 +27,4 @@ contract LibraryTest {
         });
         return vars.getReward();
    }
-
-   function toAmount(
-   )
 }

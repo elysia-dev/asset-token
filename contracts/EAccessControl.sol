@@ -39,6 +39,7 @@ contract EAccessControl is IEAccessControl, AccessControl {
 
     function addAddressesToWhitelist(address[] memory accounts)
         external
+        override
         onlyAdmin
     {
         uint256 len = accounts.length;

@@ -7,7 +7,7 @@ const elPrice = '3' + '0'.repeat(16);
 const ethPrice = '1' + '0'.repeat(21);
 const overFlowNumber = '1' + '0'.repeat(80);
 
-contract('LibraryTest', (accounts) => {
+describe('LibraryTest', (accounts) => {
     let library;
 
     const [admin, account1] = accounts;
@@ -27,9 +27,14 @@ contract('LibraryTest', (accounts) => {
                 1000,
                 {from: admin})
 
-            expect(await priceOracle.getElPrice()).to.be.bignumber.equal(elPrice)
-
-            expectEvent(setElPriceTx, 'NewElPrice', {newElPrice: elPrice})
+            expect(await await library.getReward(
+                5000,
+                100,
+                1,
+                2,
+                10000,
+                1000,
+                {from: admin})).to.be.bignumber.equal(6000)
         })
 
         it('General account cannot set ElPrice', async () => {

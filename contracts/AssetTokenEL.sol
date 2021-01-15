@@ -5,18 +5,20 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
-import "./PriceOracle.sol";
+import "./EPriceOracle.sol";
 import "./EAccessControl.sol";
 import "./IAssetToken.sol";
 import "./Library.sol";
 
-contract AssetToken is IAssetToken, ERC20, Pausable {
+contract AssetTokenEL is IAssetToken, ERC20, Pausable {
     using SafeMath for uint;
     using AssetTokenLibrary for RewardLocalVars;
 
     IEAccessControl public _eAccessControl;
     IEPriceOracle public _ePriceOracle;
     IERC20 private _el;
+
+    string public _payments;
 
     uint public _latitude;
     uint public _longitude;
@@ -59,6 +61,7 @@ contract AssetToken is IAssetToken, ERC20, Pausable {
         uint amount_,
         uint price_,
         uint rewardPerBlock_,
+        string memory payments_,
         uint latitude_,
         uint longitude_,
         uint assetPrice_,
@@ -67,9 +70,12 @@ contract AssetToken is IAssetToken, ERC20, Pausable {
         string memory symbol_,
         uint8 decimals_
     ) ERC20 (name_,symbol_) {
+        _ePriceOracle = ePriceOracle_;
+        _eAccessControl = eAccessControl_;
         _el = el_;
         _price = price_;
         _rewardPerBlock = rewardPerBlock_;
+        _payments = payments_;
         _latitude = latitude_;
         _longitude = longitude_;
         _assetPrice = assetPrice_;
@@ -93,7 +99,7 @@ contract AssetToken is IAssetToken, ERC20, Pausable {
         _checkBalance(msg.sender, address(this), amount);
 
         require(_el.transferFrom(msg.sender, address(this), _ePriceOracle.toElAmount(amount, _price)), 'EL : transferFrom failed');
-        _transfer(address(this), msg.sender, amount);
+        transferFrom(address(this), msg.sender, amount);
 
         return true;
     }
@@ -111,7 +117,7 @@ contract AssetToken is IAssetToken, ERC20, Pausable {
         _checkBalance(address(this), msg.sender, amount);
 
         require(_el.transfer(msg.sender, _ePriceOracle.toElAmount(amount, _price)), 'EL : transfer failed');
-        _transfer(msg.sender, address(this), amount);
+        transferFrom(msg.sender, address(this), amount);
 
         return true;
     }
@@ -219,13 +225,13 @@ contract AssetToken is IAssetToken, ERC20, Pausable {
 
     /*** Admin functions ***/
 
-    function setEPriceOracle(IEPriceOracle ePriceOracle) external onlyAdmin {
+    function setEPriceOracle(IEPriceOracle ePriceOracle) external override onlyAdmin {
         _ePriceOracle = ePriceOracle;
 
         emit NewPriceOracle(address(_ePriceOracle));
     }
 
-    function setEAccessControl(IEAccessControl eAccessControl) external onlyAdmin {
+    function setEAccessControl(IEAccessControl eAccessControl) external override onlyAdmin {
         _eAccessControl = eAccessControl;
 
         emit NewAccessControl(address(_eAccessControl));
