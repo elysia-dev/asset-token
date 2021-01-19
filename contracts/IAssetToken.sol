@@ -1,13 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-import "./EPriceOracle.sol";
-import "./EAccessControl.sol";
-
 interface IAssetToken {
-    function purchase(uint256 amount) external returns (bool);
-    function refund(uint256 amount) external returns (bool);
+
+    function setRewardPerBlock(uint rewardPerBlock_) external returns (bool);
+    function pause() external;
+    function unpause() external;
+    function setEController(address eController) external;
+    function getPayment() external view returns (uint);
+}
+
+interface IAssetTokenERC20 {
+
+    function purchase(uint amount) external returns (bool);
+    function refund(uint amount) external returns (bool);
     function claimReward() external;
-    function setEAccessControl(IEAccessControl eAccessControl) external;
-    function setEPriceOracle(IEPriceOracle ePriceOracle) external;
+}
+
+interface IAssetTokenEth {
+
+    function purchase(uint amount) external payable returns (bool);
+    function refund(uint amount) external returns (bool);
+    function claimReward() external;
+
 }
