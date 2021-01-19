@@ -12,6 +12,9 @@
     "dotenv": "^8.2.0"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-etherscan": "^2.1.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "hardhat": "^2.0.7",
     "sol2uml": "^1.1.25",
