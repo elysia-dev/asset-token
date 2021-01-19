@@ -70,10 +70,23 @@ async function main() {
     assetTokenEthArguments.symbol_,
     assetTokenEthArguments.decimals_,
   );
-  
+
   console.log("assetTokenEL address", assetTokenEL.address)
   console.log("assetTokenEth address", assetTokenEth.address)
 
+  await controller.setEPriceOracle(ePriceOracleEL.address, 0)
+  await controller.setEPriceOracle(ePriceOracleEth.address, 1)
+
+  const setEPriceOracleEL = await controller.ePriceOracle(0);
+
+  console.log("ePriceOracleEL:", setEPriceOracleEL)
+
+  await controller.setAssetTokens([assetTokenEL.address, assetTokenEth.address])
+
+  const assetTokenFirst = await controller.assetTokenList(0);
+  const assetTokenSecond = await controller.assetTokenList(1);
+
+  console.log("assetTokenList", assetTokenFirst, assetTokenSecond);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
