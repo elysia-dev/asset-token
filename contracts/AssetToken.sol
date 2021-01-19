@@ -149,8 +149,6 @@ contract AssetToken is IAssetToken, ERC20, Pausable {
     function _beforeTokenTransfer(address from, address to, uint amount) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
 
-        require(balanceOf(from) >= amount, "AssetToken: transfer amount exceeds balance");
-
         /* RewardManager */
         _saveReward(from);
         _saveReward(to);

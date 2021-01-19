@@ -6,8 +6,8 @@
 const hre = require("hardhat");
 
 const ePriceOracleEthArguments = require("./deployArguments/EPriceOracleEth.js")
-const AssetTokenELArguments = require("./deployArguments/AssetTokenEL")
-const AssetTokenEthArguments = require("./deployArguments/AssetTokenEth.js")
+const assetTokenELArguments = require("./deployArguments/AssetTokenEL")
+const assetTokenEthArguments = require("./deployArguments/AssetTokenEth.js")
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -21,11 +21,11 @@ async function main() {
   const EPriceOracleEth = await hre.ethers.getContractFactory("EPriceOracleEth");
   const EPriceOracleEL = await hre.ethers.getContractFactory("EPriceOracleEL");
   const EController = await hre.ethers.getContractFactory("EController");
-  const AssetTokenEl = await hre.ethers.getContractFactory("AssetTokenEl");
+  const AssetTokenEL = await hre.ethers.getContractFactory("AssetTokenEL");
   const AssetTokenEth = await hre.ethers.getContractFactory("AssetTokenEth");
 
   const ePriceOracleEL = await EPriceOracleEL.deploy();
-  const ePriceOracleEth = await EPriceOracleEth.depoly(
+  const ePriceOracleEth = await EPriceOracleEth.deploy(
     ePriceOracleEthArguments.priceFeed
   );
   const controller = await EController.deploy();
@@ -37,6 +37,42 @@ async function main() {
   console.log("ePriceOracleEL address:", ePriceOracleEL.address)
   console.log("ePriceOracleEth address:", ePriceOracleEth.address)
   console.log("controller address:",controller.address)
+
+  assetTokenELArguments.eController_ = controller.address;
+  assetTokenEthArguments.eController_ = controller.address;
+
+  const assetTokenEL = await AssetTokenEL.deploy(
+    assetTokenELArguments.el_,
+    assetTokenELArguments.eController_,
+    assetTokenELArguments.amount_,
+    assetTokenELArguments.price_,
+    assetTokenELArguments.rewardPerBlock_,
+    assetTokenELArguments.payment_,
+    assetTokenELArguments.latitude_,
+    assetTokenELArguments.longitude_,
+    assetTokenELArguments.assetPrice_,
+    assetTokenELArguments.interestRate_,
+    assetTokenELArguments.name_,
+    assetTokenELArguments.symbol_,
+    assetTokenELArguments.decimals_,
+  );
+  const assetTokenEth = await AssetTokenEth.deploy(
+    assetTokenEthArguments.eController_,
+    assetTokenEthArguments.amount_,
+    assetTokenEthArguments.price_,
+    assetTokenEthArguments.rewardPerBlock_,
+    assetTokenEthArguments.payment_,
+    assetTokenEthArguments.latitude_,
+    assetTokenEthArguments.longitude_,
+    assetTokenEthArguments.assetPrice_,
+    assetTokenEthArguments.interestRate_,
+    assetTokenEthArguments.name_,
+    assetTokenEthArguments.symbol_,
+    assetTokenEthArguments.decimals_,
+  );
+  
+  console.log("assetTokenEL address", assetTokenEL.address)
+  console.log("assetTokenEth address", assetTokenEth.address)
 
 }
 
