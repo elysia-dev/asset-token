@@ -4,9 +4,9 @@ pragma solidity 0.7.4;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./EController.sol";
 import "./IAssetToken.sol";
-import "./AssetToken.sol";
+import "./AssetTokenBase.sol";
 
-contract AssetTokenEth is IAssetTokenEth, AssetToken {
+contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
     using SafeMath for uint;
 
@@ -26,7 +26,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetToken {
         string memory name_,
         string memory symbol_,
         uint8 decimals_
-    ) AssetToken (
+    ) AssetTokenBase (
         eController_,
         amount_,
         price_,

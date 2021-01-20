@@ -31,7 +31,7 @@ contract EController is IEController, AccessControl {
     mapping(address => uint) assetPayment;
 
     // AssetToken list
-    IAssetToken[] public assetTokenList;
+    IAssetTokenBase[] public assetTokenList;
 
     // 0: el, 1: eth, 2: wBTC ...
     mapping(uint => IEPriceOracle) public ePriceOracle;
@@ -66,7 +66,7 @@ contract EController is IEController, AccessControl {
         emit NewPriceOracle(address(ePriceOracle_));
     }
 
-    function setAssetTokens(IAssetToken[] memory assetTokens) external onlyAdmin {
+    function setAssetTokens(IAssetTokenBase[] memory assetTokens) external onlyAdmin {
 
         uint len = assetTokens.length;
 
@@ -77,7 +77,7 @@ contract EController is IEController, AccessControl {
         }
     }
 
-    function pauseAssetTokens(IAssetToken[] memory assetTokens) public onlyAdmin {
+    function pauseAssetTokens(IAssetTokenBase[] memory assetTokens) public onlyAdmin {
 
         uint len = assetTokens.length;
 
@@ -86,7 +86,7 @@ contract EController is IEController, AccessControl {
         }
     }
 
-    function unpauseAssetTokens(IAssetToken[] memory assetTokens) public onlyAdmin {
+    function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens) public onlyAdmin {
 
         uint len = assetTokens.length;
 

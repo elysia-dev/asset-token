@@ -10,7 +10,7 @@ import "./IEPriceOracle.sol";
 import "./EController.sol";
 import "./Library.sol";
 
-contract AssetToken is IAssetToken, ERC20, Pausable {
+contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     using SafeMath for uint;
     using AssetTokenLibrary for RewardLocalVars;
 

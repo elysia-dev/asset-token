@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-interface IAssetToken {
+interface IAssetTokenBase {
 
     function setRewardPerBlock(uint rewardPerBlock_) external returns (bool);
     function pause() external;

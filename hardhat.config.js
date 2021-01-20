@@ -2,6 +2,7 @@ require("dotenv/config")
 require('@nomiclabs/hardhat-ethers');
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
+require("hardhat-gas-reporter");
 
 // const accounts = {
 //   mnemonic: process.env.MNEMONIC,
