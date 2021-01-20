@@ -1,60 +1,42 @@
-const { BN, expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
-const { expect } = require('chai');
-const PriceOracle = artifacts.require('EPriceOracleTest');
+const { expect } = require("chai");
 
-const price = '5' + '0'.repeat(18);
-const elPrice = '3' + '0'.repeat(16);
-const ethPrice = '1' + '0'.repeat(21);
-const overFlowNumber = '1' + '0'.repeat(80);
+describe("PriceOracle", () => {
+  let priceOracle;
 
-contract('EPriceOracleTest', (accounts) => {
-    let priceOracle;
+  let admin, account1;
 
-    const [admin, account1] = accounts;
+  beforeEach(async () => {
+    [admin, account1] = await ethers.getSigners();
 
-    beforeEach(async () => {
-        priceOracle = await PriceOracle.new({from : admin})
-    })
+    PriceOracle = await ethers.getContractFactory("PriceOracle");
+    priceOracle = await PriceOracle.connect(admin).deploy(10000);
 
-    context('.setElPrice', async () => {
-        it('Admin can set ElPrice', async () => {
-            const setElPriceTx = await priceOracle.setElPrice(elPrice, {from: admin})
+    await priceOracle.deployed();
+  });
 
-            expect(await priceOracle.getElPrice()).to.be.bignumber.equal(elPrice)
+  context(".setPrice", async () => {
+    it("Admin can set price", async () => {
+      await expect(priceOracle.connect(admin).setPrice(30))
+        .to.emit(priceOracle, "NewPrice")
+        .withArgs(30);
 
-            expectEvent(setElPriceTx, 'NewElPrice', {newElPrice: elPrice})
-        })
+      expect(await priceOracle.getPrice()).to.eq(30);
+    });
 
-        it('General account cannot set ElPrice', async () => {
-            await expectRevert(
-                priceOracle.setElPrice(elPrice, {from: account1}),
-                "Restricted to admin."
-            );
-        })
-    })
+    it("General account cannot set price", async () => {
+      await expect(
+        priceOracle.connect(account1).setPrice(30)
+      ).to.be.revertedWith("PriceOracle: Restricted to admin");
+    });
+  });
 
-    context('When price is set', async () => {
-        beforeEach(async () => {
-            await priceOracle.setElPrice(elPrice, {from: admin});
-        })
+  context(".mulPrice", async () => {
+    it("it return multiple result", async () => {
+      expect(await priceOracle.mulPrice(10)).to.equal(100000);
+    });
 
-        context('.toElAmount', async () => {
-            it('return El amount from asset token amount', async () => {
-                expect(await priceOracle.toElAmount(10, price)).to.be.bignumber.equal(
-                    (new BN('1' + '0'.repeat(18))).mul(new BN(5000)).div(new BN(3))
-                )
-            })
-
-            it('throw exception when amount is so big', async () => {
-                try {
-                    // 2^256 ~= 1e77
-                    await priceOracle.toElAmount(overFlowNumber, price);
-                    assert.fail("The method should have thrown an error");
-                }
-                catch (error) {
-                    assert.include(error.message, 'overflow');
-                }
-            })
-        })
-    })
-})
+    it("when overflow, it revert", async () => {
+      await expect(priceOracle.mulPrice(`1${"0".repeat(75)}`)).to.be.reverted;
+    });
+  });
+});
