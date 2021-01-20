@@ -44,13 +44,7 @@ yarn install --lock-file # or `npm install`
 ## Testing
 
 ```
-truffle test
-```
-
-or
-
-```
-truffle test ./test/file.js
+yarn hardhat ./test/file.ts
 ```
 
 # Discussion
