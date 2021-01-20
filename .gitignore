@@ -133,3 +133,4 @@ build/
 
 # flatten file
 flat/
+typechain/

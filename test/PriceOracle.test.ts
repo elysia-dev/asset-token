@@ -1,17 +1,18 @@
-const { expect } = require("chai");
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { PriceOracle } from "../typechain/PriceOracle";
 
 describe("PriceOracle", () => {
-  let priceOracle;
+  let priceOracle: PriceOracle;
 
-  let admin, account1;
+  let admin: SignerWithAddress, account1: SignerWithAddress;
 
   beforeEach(async () => {
     [admin, account1] = await ethers.getSigners();
 
-    PriceOracle = await ethers.getContractFactory("PriceOracle");
-    priceOracle = await PriceOracle.connect(admin).deploy(10000);
-
-    await priceOracle.deployed();
+    const PriceOracle = await ethers.getContractFactory("PriceOracle");
+    priceOracle = (await PriceOracle.connect(admin).deploy(10000)) as PriceOracle;
   });
 
   context(".setPrice", async () => {
