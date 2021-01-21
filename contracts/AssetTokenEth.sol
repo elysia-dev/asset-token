@@ -137,7 +137,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * @dev Withdraw all El from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
-        "hello";
         payable(msg.sender).send(address(this).balance);
         //payable(msg.sender).send(address(this).balance);
     }
