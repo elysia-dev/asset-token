@@ -7,39 +7,40 @@ import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
 
 contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
-
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     /// @notice Emitted when an user claimed reward
-    event RewardClaimed(address account, uint reward);
+    event RewardClaimed(address account, uint256 reward);
 
     constructor(
         IEController eController_,
-        uint amount_,
-        uint price_,
-        uint rewardPerBlock_,
-        uint payment_,
-        uint latitude_,
-        uint longitude_,
-        uint assetPrice_,
-        uint interestRate_,
+        uint256 amount_,
+        uint256 price_,
+        uint256 rewardPerBlock_,
+        uint256 payment_,
+        uint256 latitude_,
+        uint256 longitude_,
+        uint256 assetPrice_,
+        uint256 interestRate_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
-    ) AssetTokenBase (
-        eController_,
-        amount_,
-        price_,
-        rewardPerBlock_,
-        payment_,
-        latitude_,
-        longitude_,
-        assetPrice_,
-        interestRate_,
-        name_,
-        symbol_,
-        decimals_) {
-    }
+    )
+        AssetTokenBase(
+            eController_,
+            amount_,
+            price_,
+            rewardPerBlock_,
+            payment_,
+            latitude_,
+            longitude_,
+            assetPrice_,
+            interestRate_,
+            name_,
+            symbol_,
+            decimals_
+        )
+    {}
 
     /**
      * @dev purchase asset token with el.
@@ -50,11 +51,23 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * - `amount` this contract should have more asset token than the amount.
      * - `amount` msg.sender should have more el than elAmount converted from the amount.
      */
-    function purchase(uint amount) external payable override whenNotPaused returns (bool) {
+    function purchase(uint256 amount)
+        external
+        payable
+        override
+        whenNotPaused
+        returns (bool)
+    {
         _checkBalance(msg.sender, address(this), amount);
 
-        require(msg.value == eController.mulPrice(amount, price), 'Not enough msg.value');
-        require(transferFrom(address(this), msg.sender, amount), 'Asset Token : transfer Failed');
+        require(
+            msg.value == eController.mulPrice(amount, price),
+            "Not enough msg.value"
+        );
+        require(
+            transferFrom(address(this), msg.sender, amount),
+            "Asset Token : transfer Failed"
+        );
 
         return true;
     }
@@ -68,11 +81,22 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * - `amount` msg.sender should have more asset token than the amount.
      * - `amount` this contract should have more el than elAmount converted from the amount.
      */
-    function refund(uint amount) external override whenNotPaused returns (bool) {
+    function refund(uint256 amount)
+        external
+        override
+        whenNotPaused
+        returns (bool)
+    {
         _checkBalance(address(this), msg.sender, amount);
 
-        require(transferFrom(msg.sender, address(this), amount), 'Asset Token : transfer failed');
-        require(msg.sender.send(eController.mulPrice(amount, price)), 'Eth : send failed');
+        require(
+            transferFrom(msg.sender, address(this), amount),
+            "Asset Token : transfer failed"
+        );
+        require(
+            msg.sender.send(eController.mulPrice(amount, price)),
+            "Eth : send failed"
+        );
 
         return true;
     }
@@ -87,24 +111,35 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * Requirements:
      * - `elPrice` cannot be the zero.
      */
-    function claimReward() external override onlyWhitelisted(msg.sender) whenNotPaused {
-        uint reward = getReward(msg.sender).mul(1e18).div(eController.getPrice());
+    function claimReward()
+        external
+        override
+        onlyWhitelisted(msg.sender)
+        whenNotPaused
+    {
+        uint256 reward =
+            getReward(msg.sender).mul(1e18).div(eController.getPrice());
 
-        require(reward < address(this).balance, 'AssetToken: Insufficient seller balance.');
+        require(
+            reward < address(this).balance,
+            "AssetToken: Insufficient seller balance."
+        );
 
         _clearReward(msg.sender);
         if (!payable(msg.sender).send(reward)) {
             _saveReward(msg.sender);
         }
 
-		emit RewardClaimed(msg.sender, reward);
+        emit RewardClaimed(msg.sender, reward);
     }
 
     /**
      * @dev Withdraw all El from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
+        "hello";
         payable(msg.sender).send(address(this).balance);
+        //payable(msg.sender).send(address(this).balance);
     }
 
     /**
@@ -116,7 +151,14 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * - `amount` buyer should have more asset token than the amount.
      * - `amount` seller should have more el than elAmount converted from the amount.
      */
-    function _checkBalance(address buyer, address seller, uint amount) internal view {
-        require(balanceOf(seller) > amount, 'AssetToken: Insufficient seller balance.');
+    function _checkBalance(
+        address buyer,
+        address seller,
+        uint256 amount
+    ) internal view {
+        require(
+            balanceOf(seller) > amount,
+            "AssetToken: Insufficient seller balance."
+        );
     }
 }

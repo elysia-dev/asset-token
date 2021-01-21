@@ -7,14 +7,25 @@ import "./EPriceOracleEth.sol";
 import "./IAssetToken.sol";
 
 interface IEController {
-    function mulPrice(uint amount, uint price) external view returns (uint);
-    function getPrice() external view returns (uint);
+    function mulPrice(uint256 amount, uint256 price)
+        external
+        view
+        returns (uint256);
+
+    function getPrice() external view returns (uint256);
+
     function addAddressToWhitelist(address account) external;
+
     function addAddressesToWhitelist(address[] memory accounts) external;
+
     function removeAddressFromWhitelist(address account) external;
+
     function removeAddressesFromWhitelist(address[] memory accounts) external;
+
     function changeWhitelistedAccount(address account) external;
+
     function isWhitelisted(address account) external view returns (bool);
+
     function isAdmin(address account) external view returns (bool);
 }
 
@@ -24,17 +35,16 @@ interface IEController {
  * @author Elysia
  */
 contract EController is IEController, AccessControl {
-
     bytes32 public constant WHITELISTED = keccak256("WHITELISTED");
 
     // 0: el, 1: eth, 2: wBTC ...
-    mapping(address => uint) assetPayment;
+    mapping(address => uint256) assetPayment;
 
     // AssetToken list
     IAssetTokenBase[] public assetTokenList;
 
     // 0: el, 1: eth, 2: wBTC ...
-    mapping(uint => IEPriceOracle) public ePriceOracle;
+    mapping(uint256 => IEPriceOracle) public ePriceOracle;
 
     /// @notice Emitted when new priceOracle is set
     event NewPriceOracle(address ePriceOracle);
@@ -45,52 +55,66 @@ contract EController is IEController, AccessControl {
     constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(WHITELISTED, DEFAULT_ADMIN_ROLE);
-        }
+    }
 
     /*** Oracle View functions ***/
 
-    function mulPrice(uint amount, uint price) external view override returns (uint) {
+    function mulPrice(uint256 amount, uint256 price)
+        external
+        view
+        override
+        returns (uint256)
+    {
         IEPriceOracle oracle = ePriceOracle[assetPayment[msg.sender]];
         return oracle.mulPrice(amount, price);
     }
 
-    function getPrice() external view override returns (uint) {
+    function getPrice() external view override returns (uint256) {
         IEPriceOracle oracle = ePriceOracle[assetPayment[msg.sender]];
         return oracle.getPrice();
     }
 
     /*** Admin Functions on Setup ***/
 
-    function setEPriceOracle(IEPriceOracle ePriceOracle_, uint payment) external onlyAdmin {
+    function setEPriceOracle(IEPriceOracle ePriceOracle_, uint256 payment)
+        external
+        onlyAdmin
+    {
         ePriceOracle[payment] = ePriceOracle_;
         emit NewPriceOracle(address(ePriceOracle_));
     }
 
-    function setAssetTokens(IAssetTokenBase[] memory assetTokens) external onlyAdmin {
+    function setAssetTokens(IAssetTokenBase[] memory assetTokens)
+        external
+        onlyAdmin
+    {
+        uint256 len = assetTokens.length;
 
-        uint len = assetTokens.length;
-
-        for (uint i = 0; i < len; i++) {
+        for (uint256 i = 0; i < len; i++) {
             assetTokenList.push(assetTokens[i]);
             assetPayment[address(assetTokens[i])] = assetTokens[i].getPayment();
             emit NewAssetToken(address(assetTokens[i]));
         }
     }
 
-    function pauseAssetTokens(IAssetTokenBase[] memory assetTokens) public onlyAdmin {
+    function pauseAssetTokens(IAssetTokenBase[] memory assetTokens)
+        public
+        onlyAdmin
+    {
+        uint256 len = assetTokens.length;
 
-        uint len = assetTokens.length;
-
-        for (uint i = 0; i < len; i++) {
+        for (uint256 i = 0; i < len; i++) {
             assetTokens[i].pause();
         }
     }
 
-    function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens) public onlyAdmin {
+    function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens)
+        public
+        onlyAdmin
+    {
+        uint256 len = assetTokens.length;
 
-        uint len = assetTokens.length;
-
-        for (uint i = 0; i < len; i++) {
+        for (uint256 i = 0; i < len; i++) {
             assetTokens[i].unpause();
         }
     }
@@ -101,7 +125,11 @@ contract EController is IEController, AccessControl {
      * @notice Add an 'account' to the whitelist
      * @param account The address of account to add
      */
-    function addAddressToWhitelist(address account) external override onlyAdmin {
+    function addAddressToWhitelist(address account)
+        external
+        override
+        onlyAdmin
+    {
         grantRole(WHITELISTED, account);
     }
 
@@ -145,7 +173,7 @@ contract EController is IEController, AccessControl {
         external
         override
         onlyWhitelisted()
-        {
+    {
         grantRole(WHITELISTED, account);
         revokeRole(WHITELISTED, msg.sender);
     }
@@ -165,12 +193,17 @@ contract EController is IEController, AccessControl {
     }
 
     /// @dev Return `true` if the account belongs to whitelist.
-    function isWhitelisted(address account) external override view returns (bool) {
+    function isWhitelisted(address account)
+        external
+        view
+        override
+        returns (bool)
+    {
         return _isWhitelisted(account);
     }
 
     /// @dev Return `true` if the account belongs to the admin role.
-    function isAdmin(address account) external override view returns (bool) {
+    function isAdmin(address account) external view override returns (bool) {
         return _isAdmin(account);
     }
 

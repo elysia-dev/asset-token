@@ -11,54 +11,54 @@ import "./EController.sol";
 import "./Library.sol";
 
 contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
-    using SafeMath for uint;
+    using SafeMath for uint256;
     using AssetTokenLibrary for RewardLocalVars;
 
     IEController public eController;
 
-    uint public latitude;
-    uint public longitude;
-    uint public assetPrice;
-    uint public interestRate;
+    uint256 public latitude;
+    uint256 public longitude;
+    uint256 public assetPrice;
+    uint256 public interestRate;
 
     // USD per Elysia Asset Token
     // decimals: 18
-    uint public price;
+    uint256 public price;
 
     // monthlyRent$/(secondsPerMonth*averageBlockPerSecond)
     // Decimals: 18
-    uint public rewardPerBlock;
+    uint256 public rewardPerBlock;
 
     // 0: el, 1: eth, 2: wBTC ...
-    uint public payment;
+    uint256 public payment;
 
     // Account rewards (USD)
     // Decimals: 18
-    mapping(address => uint) private _rewards;
+    mapping(address => uint256) private _rewards;
 
     // Account block numbers
-    mapping(address => uint) private _blockNumbers;
+    mapping(address => uint256) private _blockNumbers;
 
     /// @notice Emitted when rewards per block is changed
-    event NewRewardPerBlock(uint newRewardPerBlock);
+    event NewRewardPerBlock(uint256 newRewardPerBlock);
 
     /// @notice Emitted when eController is changed
     event NewController(address newController);
 
     constructor(
         IEController eController_,
-        uint amount_,
-        uint price_,
-        uint rewardPerBlock_,
-        uint payment_,
-        uint latitude_,
-        uint longitude_,
-        uint assetPrice_,
-        uint interestRate_,
+        uint256 amount_,
+        uint256 price_,
+        uint256 rewardPerBlock_,
+        uint256 payment_,
+        uint256 latitude_,
+        uint256 longitude_,
+        uint256 assetPrice_,
+        uint256 interestRate_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
-    ) ERC20 (name_,symbol_) {
+    ) ERC20(name_, symbol_) {
         eController = eController_;
         price = price_;
         rewardPerBlock = rewardPerBlock_;
@@ -73,19 +73,23 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
 
     /*** View functions ***/
 
-    function getPayment() external view override returns (uint) {
+    function getPayment() external view override returns (uint256) {
         return payment;
     }
 
     /*** Admin functions ***/
 
-    function setEController(address newEController) external override onlyAdmin(msg.sender) {
+    function setEController(address newEController)
+        external
+        override
+        onlyAdmin(msg.sender)
+    {
         eController = IEController(newEController);
 
         emit NewController(address(eController));
     }
 
-    function setRewardPerBlock(uint rewardPerBlock_)
+    function setRewardPerBlock(uint256 rewardPerBlock_)
         external
         override
         onlyAdmin(msg.sender)
@@ -113,22 +117,21 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
      * @param account Addresss
      * @return saved reward + new reward
      */
-    function getReward(address account) public view returns (uint) {
-
-        RewardLocalVars memory vars = RewardLocalVars({
-            newReward: 0,
-            accountReward: _rewards[account],
-            accountBalance: balanceOf(account),
-            rewardBlockNumber: _blockNumbers[account],
-            blockNumber: block.number,
-            diffBlock: 0,
-            rewardPerBlock: rewardPerBlock,
-            totalSupply: totalSupply()
-        });
+    function getReward(address account) public view returns (uint256) {
+        RewardLocalVars memory vars =
+            RewardLocalVars({
+                newReward: 0,
+                accountReward: _rewards[account],
+                accountBalance: balanceOf(account),
+                rewardBlockNumber: _blockNumbers[account],
+                blockNumber: block.number,
+                diffBlock: 0,
+                rewardPerBlock: rewardPerBlock,
+                totalSupply: totalSupply()
+            });
 
         return vars.getReward();
     }
-
 
     // function _getReward(address account) public view returns (uint) {
     //     uint newReward = 0;
@@ -146,7 +149,11 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     //     return newReward + _rewards[account];
     // }
 
-    function _beforeTokenTransfer(address from, address to, uint amount) internal virtual override {
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
 
         /* RewardManager */
@@ -174,7 +181,10 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
 
     /// @dev Restricted to members of the whitelisted user.
     modifier onlyWhitelisted(address account) {
-        require(eController.isWhitelisted(account), "Restricted to whitelisted.");
+        require(
+            eController.isWhitelisted(account),
+            "Restricted to whitelisted."
+        );
         _;
     }
 

@@ -13,9 +13,8 @@ import "./Library.sol";
  * @author Elysia
  */
 contract EPriceOracleEth is IEPriceOracle {
-
-    using SafeCast for int;
-    using SafeMath for uint;
+    using SafeCast for int256;
+    using SafeMath for uint256;
     using AssetTokenLibrary for ExchangeLocalVars;
 
     address public admin;
@@ -28,30 +27,35 @@ contract EPriceOracleEth is IEPriceOracle {
      * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
      */
     constructor(address priceFeed_) {
-            _priceFeed = AggregatorV3Interface(priceFeed_);
-            admin = msg.sender;
-        }
+        _priceFeed = AggregatorV3Interface(priceFeed_);
+        admin = msg.sender;
+    }
 
-    function getPrice() external override view returns (uint) {
+    function getPrice() external view override returns (uint256) {
         return _getEthPrice();
     }
 
-    function mulPrice(uint amount, uint price) external view override returns (uint) {
-
-        ExchangeLocalVars memory vars = ExchangeLocalVars({
-            currencyPrice: _getEthPrice(),
-            assetTokenPrice: price
-        });
+    function mulPrice(uint256 amount, uint256 price)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        ExchangeLocalVars memory vars =
+            ExchangeLocalVars({
+                currencyPrice: _getEthPrice(),
+                assetTokenPrice: price
+            });
 
         return vars.mulPrice(amount);
     }
 
-    function _getEthPrice() internal view returns (uint) {
+    function _getEthPrice() internal view returns (uint256) {
         (
             uint80 roundID,
-            int price,
-            uint startedAt,
-            uint timeStamp,
+            int256 price,
+            uint256 startedAt,
+            uint256 timeStamp,
             uint80 answeredInRound
         ) = _priceFeed.latestRoundData();
 
