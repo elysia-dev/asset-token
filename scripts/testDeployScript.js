@@ -5,9 +5,9 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 
-const ePriceOracleEthArguments = require("./deployArguments/EPriceOracleEth.js")
-const assetTokenELArguments = require("./deployArguments/AssetTokenEL")
-const assetTokenEthArguments = require("./deployArguments/AssetTokenEth.js")
+const ePriceOracleEthArguments = require("./deployArguments/EPriceOracleEth.js");
+const assetTokenELArguments = require("./deployArguments/AssetTokenEL");
+const assetTokenEthArguments = require("./deployArguments/AssetTokenEth.js");
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -18,7 +18,9 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const EPriceOracleEth = await hre.ethers.getContractFactory("EPriceOracleEth");
+  const EPriceOracleEth = await hre.ethers.getContractFactory(
+    "EPriceOracleEth"
+  );
   const EPriceOracleEL = await hre.ethers.getContractFactory("EPriceOracleEL");
   const EController = await hre.ethers.getContractFactory("EController");
   const AssetTokenEL = await hre.ethers.getContractFactory("AssetTokenEL");
@@ -34,9 +36,9 @@ async function main() {
   await ePriceOracleEth.deployed();
   await controller.deployed();
 
-  console.log("ePriceOracleEL address:", ePriceOracleEL.address)
-  console.log("ePriceOracleEth address:", ePriceOracleEth.address)
-  console.log("controller address:",controller.address)
+  console.log("ePriceOracleEL address:", ePriceOracleEL.address);
+  console.log("ePriceOracleEth address:", ePriceOracleEth.address);
+  console.log("controller address:", controller.address);
 
   assetTokenELArguments.eController_ = controller.address;
   assetTokenEthArguments.eController_ = controller.address;
@@ -54,7 +56,7 @@ async function main() {
     assetTokenELArguments.interestRate_,
     assetTokenELArguments.name_,
     assetTokenELArguments.symbol_,
-    assetTokenELArguments.decimals_,
+    assetTokenELArguments.decimals_
   );
   const assetTokenEth = await AssetTokenEth.deploy(
     assetTokenEthArguments.eController_,
@@ -68,20 +70,23 @@ async function main() {
     assetTokenEthArguments.interestRate_,
     assetTokenEthArguments.name_,
     assetTokenEthArguments.symbol_,
-    assetTokenEthArguments.decimals_,
+    assetTokenEthArguments.decimals_
   );
 
-  console.log("assetTokenEL address", assetTokenEL.address)
-  console.log("assetTokenEth address", assetTokenEth.address)
+  console.log("assetTokenEL address", assetTokenEL.address);
+  console.log("assetTokenEth address", assetTokenEth.address);
 
-  await controller.setEPriceOracle(ePriceOracleEL.address, 0)
-  await controller.setEPriceOracle(ePriceOracleEth.address, 1)
+  await controller.setEPriceOracle(ePriceOracleEL.address, 0);
+  await controller.setEPriceOracle(ePriceOracleEth.address, 1);
 
   const setEPriceOracleEL = await controller.ePriceOracle(0);
 
-  console.log("ePriceOracleEL:", setEPriceOracleEL)
+  console.log("ePriceOracleEL:", setEPriceOracleEL);
 
-  await controller.setAssetTokens([assetTokenEL.address, assetTokenEth.address])
+  await controller.setAssetTokens([
+    assetTokenEL.address,
+    assetTokenEth.address,
+  ]);
 
   const assetTokenFirst = await controller.assetTokenList(0);
   const assetTokenSecond = await controller.assetTokenList(1);
@@ -93,7 +98,7 @@ async function main() {
 // and properly handle errors.
 main()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
     process.exit(1);
   });
