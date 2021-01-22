@@ -1,17 +1,16 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import { EController } from "../typechain/EController";
 import { AssetTokenBase } from "../typechain/AssetTokenBase"
 import { EPriceOracleEL } from "../typechain/EPriceOracleEL"
 import { EPriceOracleEth } from "../typechain/EPriceOracleEth"
 import { makeAssetTokenBase } from "./Utils/AssetToken";
-import { MockProvider } from 'ethereum-waffle'
 
 describe("PriceOracle", () => {
 
     let eController: EController;
 
-    const provider = new MockProvider();
+    const provider = waffle.provider;
     const [admin, account1] = provider.getWallets()
 
     beforeEach(async () => {
