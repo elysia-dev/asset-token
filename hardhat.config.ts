@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
     },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: { mnemonic: process.env.MNEMONIC },
+      accounts: [process.env.ADMIN || ''],
       chainId: 42,
     },
   },

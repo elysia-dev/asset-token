@@ -4,30 +4,21 @@
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 
-const hre = require("hardhat");
-
-const ePriceOracleEthArguments = require("./deployArguments/EPriceOracleEth.js");
-const assetTokenELArguments = require("./deployArguments/AssetTokenEL");
-const assetTokenEthArguments = require("./deployArguments/AssetTokenEth.js");
-const kovanELArguements = require("./deployArguments/KovanEL.js");
+import hardhat from 'hardhat';
+import ePriceOracleEthArguments from "./deployArguments/EPriceOracleEth";
+import assetTokenELArguments from "./deployArguments/AssetTokenEL";
+import assetTokenEthArguments from "./deployArguments/AssetTokenEth";
+import kovanELArguements from "./deployArguments/KovanEL";
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
-
-  // We get the contract to deploy
-  const EPriceOracleEth = await hre.ethers.getContractFactory(
+  const EPriceOracleEth = await hardhat.ethers.getContractFactory(
     "EPriceOracleEth"
   );
-  const EPriceOracleEL = await hre.ethers.getContractFactory("EPriceOracleEL");
-  const EController = await hre.ethers.getContractFactory("EController");
-  const AssetTokenEL = await hre.ethers.getContractFactory("AssetTokenEL");
-  const AssetTokenEth = await hre.ethers.getContractFactory("AssetTokenEth");
-  const KovanEL = await hre.ethers.getContractFactory("KovanEL")
+  const EPriceOracleEL = await hardhat.ethers.getContractFactory("EPriceOracleEL");
+  const EController = await hardhat.ethers.getContractFactory("EController");
+  const AssetTokenEL = await hardhat.ethers.getContractFactory("AssetTokenEL");
+  const AssetTokenEth = await hardhat.ethers.getContractFactory("AssetTokenEth");
+  const KovanEL = await hardhat.ethers.getContractFactory("KovanEL")
 
   const ePriceOracleEL = await EPriceOracleEL.deploy();
   const ePriceOracleEth = await EPriceOracleEth.deploy(
@@ -41,14 +32,19 @@ async function main() {
     kovanELArguements.decimals_
   );
 
+  console.log("Deploy start")
   await ePriceOracleEL.deployed();
-  await ePriceOracleEth.deployed();
-  await controller.deployed();
-  await kovanEL.deployed()
-
   console.log("ePriceOracleEL address:", ePriceOracleEL.address);
+
+  await ePriceOracleEth.deployed();
   console.log("ePriceOracleEth address:", ePriceOracleEth.address);
+
+  await controller.deployed();
   console.log("controller address:", controller.address);
+
+  await kovanEL.deployed()
+  console.log("kovalEl address:", kovanEL.address);
+
 
   assetTokenELArguments.eController_ = controller.address;
   assetTokenELArguments.el_ = kovanEL.address;
@@ -69,6 +65,8 @@ async function main() {
     assetTokenELArguments.symbol_,
     assetTokenELArguments.decimals_
   );
+  console.log("assetTokenEL address", assetTokenEL.address);
+
   const assetTokenEth = await AssetTokenEth.deploy(
     assetTokenEthArguments.eController_,
     assetTokenEthArguments.amount_,
@@ -83,8 +81,6 @@ async function main() {
     assetTokenEthArguments.symbol_,
     assetTokenEthArguments.decimals_
   );
-
-  console.log("assetTokenEL address", assetTokenEL.address);
   console.log("assetTokenEth address", assetTokenEth.address);
 
   await controller.setEPriceOracle(ePriceOracleEL.address, 0);

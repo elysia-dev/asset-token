@@ -5,7 +5,6 @@
   "repository": "https://github.com/modoridev/galao.git",
   "author": "jaeboklee-modo <69131855+jaeboklee-modo@users.noreply.github.com>",
   "license": "MIT",
-  "type": "module",
   "dependencies": {
     "@chainlink/contracts": "0.0.10",
     "@openzeppelin/contracts": "^3.3.0",
