@@ -49,6 +49,7 @@ contract EController is IEController, AccessControl {
 
     constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, address(this));
         _setRoleAdmin(WHITELISTED, DEFAULT_ADMIN_ROLE);
     }
 
