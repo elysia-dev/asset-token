@@ -41,12 +41,11 @@ library AssetTokenLibrary {
         return self.accountReward.add(self.newReward);
     }
 
-    function mulPrice(ExchangeLocalVars memory self, uint256 amount)
+    function mulPrice(ExchangeLocalVars memory self)
         internal
         pure
-        returns (uint256)
+        returns (uint)
     {
-        return
-            amount.mul(self.assetTokenPrice).mul(1e18).div(self.currencyPrice);
+        return self.assetTokenPrice.mul(1e18).div(self.currencyPrice);
     }
 }

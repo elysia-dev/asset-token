@@ -68,7 +68,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
             _el.transferFrom(
                 msg.sender,
                 address(this),
-                eController.mulPrice(amount, price)
+                amount.mul(eController.mulPrice(price))
             ),
             "EL : transferFrom failed"
         );
@@ -95,7 +95,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         _checkBalance(address(this), msg.sender, amount);
 
         require(
-            _el.transfer(msg.sender, eController.mulPrice(amount, price)),
+            _el.transfer(msg.sender, amount.mul(eController.mulPrice(price))),
             "EL : transfer failed"
         );
         transferFrom(msg.sender, address(this), amount);
@@ -147,7 +147,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         uint256 amount
     ) internal view {
         require(
-            _el.balanceOf(buyer) > eController.mulPrice(amount, price),
+            _el.balanceOf(buyer) > amount.mul(eController.mulPrice(price)),
             "AssetToken: Insufficient buyer el balance."
         );
         require(

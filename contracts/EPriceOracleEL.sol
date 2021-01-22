@@ -36,7 +36,7 @@ contract EPriceOracleEL is IEPriceOracle {
         return _elPrice;
     }
 
-    function mulPrice(uint256 amount, uint256 price)
+    function mulPrice(uint256 price)
         external
         view
         override
@@ -48,7 +48,7 @@ contract EPriceOracleEL is IEPriceOracle {
                 assetTokenPrice: price
             });
 
-        return vars.mulPrice(amount);
+        return vars.mulPrice();
     }
 
     function setElPrice(uint256 elPrice_) external returns (bool) {

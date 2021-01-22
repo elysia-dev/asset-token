@@ -61,7 +61,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         _checkBalance(msg.sender, address(this), amount);
 
         require(
-            msg.value == eController.mulPrice(amount, price),
+            msg.value == amount.mul(eController.mulPrice(price)),
             "Not enough msg.value"
         );
         require(
@@ -94,7 +94,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             "Asset Token : transfer failed"
         );
         require(
-            msg.sender.send(eController.mulPrice(amount, price)),
+            msg.sender.send(amount.mul(eController.mulPrice(price))),
             "Eth : send failed"
         );
 
@@ -137,7 +137,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * @dev Withdraw all El from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
-        payable(msg.sender).send(address(this).balance);
+        require(payable(msg.sender).send(address(this).balance), "Admin withdraw failed");
         //payable(msg.sender).send(address(this).balance);
     }
 
