@@ -4,6 +4,8 @@ import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-solhint"
 import "@nomiclabs/hardhat-etherscan"
 import "hardhat-typechain";
+// Gas-reporter's parser dependency makes Warning:
+// Accessing non-existent property 'INVALID_ALT_NUMBER' of module exports inside circular dependency
 import "hardhat-gas-reporter";
 
 
@@ -39,6 +41,13 @@ const config: HardhatUserConfig = {
     tests: "./test",
     cache: "./cache",
   },
+  mocha: {
+    reporter: 'eth-gas-reporter',
+    reporterOptions: {
+      currency: 'KRW',
+      showTimeSpent: true
+    }
+  }
 };
 
 export default config;
