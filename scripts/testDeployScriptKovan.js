@@ -9,6 +9,7 @@ const hre = require("hardhat");
 const ePriceOracleEthArguments = require("./deployArguments/EPriceOracleEth.js");
 const assetTokenELArguments = require("./deployArguments/AssetTokenEL");
 const assetTokenEthArguments = require("./deployArguments/AssetTokenEth.js");
+const kovanELArguements = require("./deployArguments/KovanEL.js");
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -26,22 +27,31 @@ async function main() {
   const EController = await hre.ethers.getContractFactory("EController");
   const AssetTokenEL = await hre.ethers.getContractFactory("AssetTokenEL");
   const AssetTokenEth = await hre.ethers.getContractFactory("AssetTokenEth");
+  const KovanEL = await hre.ethers.getContractFactory("KovanEL")
 
   const ePriceOracleEL = await EPriceOracleEL.deploy();
   const ePriceOracleEth = await EPriceOracleEth.deploy(
     ePriceOracleEthArguments.priceFeed
   );
   const controller = await EController.deploy();
+  const kovanEL = await KovanEL.deploy(
+    kovanELArguements.totalSupply_,
+    kovanELArguements.name_,
+    kovanELArguements.symbol_,
+    kovanELArguements.decimals_
+  );
 
   await ePriceOracleEL.deployed();
   await ePriceOracleEth.deployed();
   await controller.deployed();
+  await kovanEL.deployed()
 
   console.log("ePriceOracleEL address:", ePriceOracleEL.address);
   console.log("ePriceOracleEth address:", ePriceOracleEth.address);
   console.log("controller address:", controller.address);
 
   assetTokenELArguments.eController_ = controller.address;
+  assetTokenELArguments.el_ = kovanEL.address;
   assetTokenEthArguments.eController_ = controller.address;
 
   const assetTokenEL = await AssetTokenEL.deploy(
@@ -79,20 +89,10 @@ async function main() {
 
   await controller.setEPriceOracle(ePriceOracleEL.address, 0);
   await controller.setEPriceOracle(ePriceOracleEth.address, 1);
-
-  const setEPriceOracleEL = await controller.ePriceOracle(0);
-
-  console.log("ePriceOracleEL:", setEPriceOracleEL);
-
   await controller.setAssetTokens([
     assetTokenEL.address,
     assetTokenEth.address,
   ]);
-
-  const assetTokenFirst = await controller.assetTokenList(0);
-  const assetTokenSecond = await controller.assetTokenList(1);
-
-  console.log("assetTokenList", assetTokenFirst, assetTokenSecond);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

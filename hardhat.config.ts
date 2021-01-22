@@ -2,8 +2,10 @@ import "dotenv/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-solhint"
+import "@nomiclabs/hardhat-etherscan"
 import "hardhat-typechain";
 import "hardhat-gas-reporter";
+
 
 import { HardhatUserConfig } from "hardhat/types";
 
@@ -23,6 +25,14 @@ const config: HardhatUserConfig = {
       accounts: { mnemonic: process.env.MNEMONIC },
       chainId: 3,
     },
+    kovan: {
+      url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: { mnemonic: process.env.MNEMONIC },
+      chainId: 42,
+    },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
   },
   paths: {
     sources: "./contracts",

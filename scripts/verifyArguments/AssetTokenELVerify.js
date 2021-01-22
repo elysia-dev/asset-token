@@ -4,8 +4,8 @@ const rewardPerBlock = "5" + "0".repeat(14);
 const interestRate = "1" + "0".repeat(17);
 
 module.exports = [
-  "0x5735Af25c6BE1b5822ccd03CDaD3C84eB1e0E9C8", // Ropsten EL
-  "0xE893e72cA5C4a7fE52aFfef054C0f33d932027F9", //아직 eController가 없어요
+  "0xc4b06189f3800ce13340e9160e875eb35626683a", // Ropsten EL
+  "0x9B2ac7b81f22F5D39CB0b7E0D8dFD60c0C073546", //아직 eController가 없어요
   10000,
   price,
   rewardPerBlock,
