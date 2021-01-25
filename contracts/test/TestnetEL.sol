@@ -9,6 +9,8 @@ import "hardhat/console.sol";
 
 contract TestnetEL is ERC20 {
 
+    using SafeMath for uint256;
+
     constructor(
         uint totalSupply_,
         string memory name_,
@@ -21,6 +23,6 @@ contract TestnetEL is ERC20 {
 
     function _transfer(address sender, address recipient, uint amount) internal override {
         super._transfer(sender, recipient, amount);
-        console.log("[TestnetEL.sol]TestnetEL transfered :", amount, sender, recipient);
+        console.log("[TestnetEL.sol]TestnetEL %s transfered from %s to %s:", amount.div(1e18), sender, recipient);
     }
 }

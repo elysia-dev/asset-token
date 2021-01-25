@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
-import "hardhat/console.sol";
 
 contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
     using SafeMath for uint256;
@@ -73,9 +72,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
             ),
             "EL : transferFrom failed"
         );
-        console.log("blah", amount);
-        require(transfer(msg.sender, amount), "AssetToken Transfer Failed");
-        console.log("blah22", amount);
+        _transfer(address(this), msg.sender, amount);
         return true;
     }
 
@@ -100,7 +97,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
             _el.transfer(msg.sender, amount.mul(eController.mulPrice(price))),
             "EL : transfer failed"
         );
-        transferFrom(msg.sender, address(this), amount);
+        _transfer(msg.sender, address(this), amount);
 
         return true;
     }
