@@ -8,7 +8,7 @@ import hardhat from 'hardhat';
 import ePriceOracleEthArguments from "./deployArguments/EPriceOracleEth";
 import assetTokenELArguments from "./deployArguments/AssetTokenEL";
 import assetTokenEthArguments from "./deployArguments/AssetTokenEth";
-import kovanELArguements from "./deployArguments/KovanEL";
+import testnetELArguements from "./deployArguments/TestnetEL";
 
 async function main() {
   const EPriceOracleEth = await hardhat.ethers.getContractFactory(
@@ -18,18 +18,18 @@ async function main() {
   const EController = await hardhat.ethers.getContractFactory("EController");
   const AssetTokenEL = await hardhat.ethers.getContractFactory("AssetTokenEL");
   const AssetTokenEth = await hardhat.ethers.getContractFactory("AssetTokenEth");
-  const KovanEL = await hardhat.ethers.getContractFactory("KovanEL")
+  const TestnetEL = await hardhat.ethers.getContractFactory("TestnetEL")
 
   const ePriceOracleEL = await EPriceOracleEL.deploy();
   const ePriceOracleEth = await EPriceOracleEth.deploy(
     ePriceOracleEthArguments.priceFeed
   );
   const controller = await EController.deploy();
-  const kovanEL = await KovanEL.deploy(
-    kovanELArguements.totalSupply_,
-    kovanELArguements.name_,
-    kovanELArguements.symbol_,
-    kovanELArguements.decimals_
+  const testnetEL = await TestnetEL.deploy(
+    testnetELArguements.totalSupply_,
+    testnetELArguements.name_,
+    testnetELArguements.symbol_,
+    testnetELArguements.decimals_
   );
 
   console.log("Deploy start")
@@ -42,12 +42,12 @@ async function main() {
   await controller.deployed();
   console.log("controller address:", controller.address);
 
-  await kovanEL.deployed()
-  console.log("kovalEl address:", kovanEL.address);
+  await testnetEL.deployed()
+  console.log("kovalEl address:", testnetEL.address);
 
 
   assetTokenELArguments.eController_ = controller.address;
-  assetTokenELArguments.el_ = kovanEL.address;
+  assetTokenELArguments.el_ = testnetEL.address;
   assetTokenEthArguments.eController_ = controller.address;
 
   const assetTokenEL = await AssetTokenEL.deploy(

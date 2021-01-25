@@ -4,9 +4,11 @@ import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-solhint"
 import "@nomiclabs/hardhat-etherscan"
 import "hardhat-typechain";
+// import "solidity-coverage"
 // Gas-reporter's parser dependency makes Warning:
 // Accessing non-existent property 'INVALID_ALT_NUMBER' of module exports inside circular dependency
 import "hardhat-gas-reporter";
+
 
 
 import { HardhatUserConfig } from "hardhat/types";

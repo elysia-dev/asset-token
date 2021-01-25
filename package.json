@@ -27,6 +27,7 @@
     "hardhat-gas-reporter": "^1.0.4",
     "hardhat-typechain": "^0.3.4",
     "sol2uml": "^1.1.25",
+    "solidity-coverage": "^0.7.14",
     "ts-generator": "^0.1.1",
     "ts-node": "^9.1.1",
     "typechain": "^4.0.1",

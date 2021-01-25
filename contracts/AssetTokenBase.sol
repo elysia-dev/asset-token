@@ -30,7 +30,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     uint256 public rewardPerBlock;
 
     // 0: el, 1: eth, 2: wBTC ...
-    uint256 public payment;
+    uint256 private _payment;
 
     // Account rewards (USD)
     // Decimals: 18
@@ -62,7 +62,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         eController = eController_;
         price = price_;
         rewardPerBlock = rewardPerBlock_;
-        payment = payment_;
+        _payment = payment_;
         latitude = latitude_;
         longitude = longitude_;
         assetPrice = assetPrice_;
@@ -74,7 +74,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     /*** View functions ***/
 
     function getPayment() external view override returns (uint256) {
-        return payment;
+        return _payment;
     }
 
     /*** Admin functions ***/
