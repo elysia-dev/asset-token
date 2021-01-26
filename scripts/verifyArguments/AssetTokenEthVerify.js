@@ -5,7 +5,7 @@ const interestRate = "1" + "0".repeat(17);
 
 module.exports = [
   //el_: "0x5735Af25c6BE1b5822ccd03CDaD3C84eB1e0E9C8", //Eth는 EL 주소 필요 없음
-  "0x9B2ac7b81f22F5D39CB0b7E0D8dFD60c0C073546", //아직 eController가 없어요
+  "0x1484390B89562Aa19e89208912655E2FF7A6F9E4", //아직 eController가 없어요
   10000,
   price,
   rewardPerBlock,

@@ -133,22 +133,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         return vars.getReward();
     }
 
-    // function _getReward(address account) public view returns (uint) {
-    //     uint newReward = 0;
-
-    //     if (
-    //         _blockNumbers[account] != 0 && block.number > _blockNumbers[account]
-    //     ) {
-    //         newReward =
-    //             (_refToken.balanceOf(account) *
-    //                 (block.number - _blockNumbers[account]) *
-    //                 rewardPerBlock) /
-    //             _refToken.totalSupply();
-    //     }
-
-    //     return newReward + _rewards[account];
-    // }
-
     function _beforeTokenTransfer(
         address from,
         address to,

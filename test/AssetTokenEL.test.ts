@@ -145,12 +145,15 @@ describe("AssetTokenEl", () => {
             expect(
                 (await el.balanceOf(assetTokenEL.address))
                     .sub(expandToDecimals(10000, 18))
-                    .add(await eController.connect(assetTokenEL.address).mulPrice(price_.mul(10)))
+                    .add(await eController.connect(assetTokenEL.address)
+                    .mulPrice(price_.mul(10)))
             ).to.be.gte(1);
 
             expect(
-                (await el.balanceOf(account1.address)).sub(expandToDecimals(10000, 18))
-                    .sub(await eController.connect(assetTokenEL.address).mulPrice(price_.mul(10)))
+                (await el.balanceOf(account1.address))
+                    .sub(expandToDecimals(10000, 18))
+                    .sub(await eController.connect(assetTokenEL.address)
+                    .mulPrice(price_.mul(10)))
             ).to.be.lte(1);
         })
 

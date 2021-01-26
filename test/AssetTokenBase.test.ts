@@ -79,61 +79,9 @@ describe("AssetTokenBase", () => {
         })
     })
 
-    context('Asset Token Pausable', async () => {
-
-        beforeEach(async () => {
-            assetTokenBaseTest = await deployContract(
-                admin,
-                AssetTokenBaseTestArtifact,
-                [
-                    eController.address,
-                    amount_,
-                    price_,
-                    rewardPerBlock_,
-                    payment_,
-                    latitude_,
-                    longitude_,
-                    assetPrice_,
-                    interestRate_,
-                    name_,
-                    symbol_,
-                    decimals_,
-                ]
-            ) as AssetTokenBaseTest;
-        })
-
-        it('Admin can pause asset token', async () => {
-            await expect(assetTokenBaseTest.connect(admin).pause())
-                .to.emit(assetTokenBaseTest, 'Paused')
-                .withArgs(admin.address)
-        })
-
-    })
-
     context('Asset Token Reward', async () => {
 
         const account1RewardPerBlock = rewardPerBlock_.mul(10).div(amount_)
-
-        beforeEach(async () => {
-            assetTokenBaseTest = await deployContract(
-                admin,
-                AssetTokenBaseTestArtifact,
-                [
-                    eController.address,
-                    amount_,
-                    price_,
-                    rewardPerBlock_,
-                    payment_,
-                    latitude_,
-                    longitude_,
-                    assetPrice_,
-                    interestRate_,
-                    name_,
-                    symbol_,
-                    decimals_,
-                ]
-            ) as AssetTokenBaseTest;
-        })
 
         it('should accrue reward properly', async () => {
             const beforeTx = await assetTokenBaseTest.connect(admin).transfer(
@@ -144,12 +92,12 @@ describe("AssetTokenBase", () => {
                 account1.address,
                 10)
             const afterReward = await assetTokenBaseTest.getReward(account1.address)
-            expect(afterReward.sub(beforeReward)).to.be.equal(
-                account1RewardPerBlock
+            expect(afterReward.sub(beforeReward))
+                .to.be.equal(account1RewardPerBlock
                     .mul(
                         ((await afterTx.wait()).blockNumber - (await beforeTx.wait()).blockNumber)
                     )
-            )
+                )
         })
 
         it('if account do not have tokens, return zero', async () => {
