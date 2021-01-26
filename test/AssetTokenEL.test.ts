@@ -242,7 +242,7 @@ describe("AssetTokenEl", () => {
             expect(await el.balanceOf(admin.address)).to.be.equal(elTotalSupply);
         })
 
-        it('account cannot withdrwa el.', async () => {
+        it('account cannot withdraw el.', async () => {
             try {
                 await assetTokenEL.connect(account1).withdrawToAdmin()
                 assert.fail("The method should have thrown an error");

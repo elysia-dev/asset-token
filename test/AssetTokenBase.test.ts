@@ -191,9 +191,9 @@ describe("AssetTokenBase", () => {
                 account1RewardPerBlock
                     .mul(
                         ((await tx2.wait()).blockNumber - (await tx1.wait()).blockNumber + 1)
-                    )
+                    ) // getReward tx adds 1 to the blockNumber
             )
-            // getReward tx adds 1 to the blockNumber
+
         })
 
         it('if user has no token, save zero value', async () => {

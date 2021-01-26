@@ -64,10 +64,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             msg.value == amount.mul(eController.mulPrice(price)),
             "Not enough msg.value"
         );
-        require(
-            transferFrom(address(this), msg.sender, amount),
-            "Asset Token : transfer Failed"
-        );
+        _transfer(address(this), msg.sender, amount);
 
         return true;
     }
@@ -89,10 +86,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {
         _checkBalance(address(this), msg.sender, amount);
 
-        require(
-            transferFrom(msg.sender, address(this), amount),
-            "Asset Token : transfer failed"
-        );
+        _transfer(msg.sender, address(this), amount);
+
         require(
             msg.sender.send(amount.mul(eController.mulPrice(price))),
             "Eth : send failed"
@@ -159,5 +154,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             balanceOf(seller) > amount,
             "AssetToken: Insufficient seller balance."
         );
+    }
+
+    receive() external payable {
     }
 }
