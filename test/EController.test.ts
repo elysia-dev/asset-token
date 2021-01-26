@@ -65,8 +65,6 @@ describe("Controller", () => {
         it("General account cannot set assetToken", async () => {
             await expect(eController.connect(account1).setAssetTokens([assetTokenBase.address]))
                 .to.be.revertedWith("Restricted to admin.")
-
-            //await expect(priceOracle.mulPrice(`1${"0".repeat(75)}`)).to.be.reverted;
         });
 
         it("Admin can pause asset token", async () => {

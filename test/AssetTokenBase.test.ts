@@ -26,36 +26,35 @@ describe("AssetTokenBase", () => {
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
 
+    beforeEach(async () => {
+
+        eController = await deployContract(
+            admin,
+            EControllerArtifact
+        ) as EController
+
+        assetTokenBaseTest = await deployContract(
+            admin,
+            AssetTokenBaseTestArtifact,
+            [
+                eController.address,
+                amount_,
+                price_,
+                rewardPerBlock_,
+                payment_,
+                latitude_,
+                longitude_,
+                assetPrice_,
+                interestRate_,
+                name_,
+                symbol_,
+                decimals_,
+            ]
+        ) as AssetTokenBaseTest;
+    })
+
     context("AssetToken.new", async () => {
-
-        beforeEach(async () => {
-            eController = await deployContract(
-                admin,
-                EControllerArtifact
-            ) as EController
-        })
-
         it('has given data', async () => {
-
-            const assetTokenBaseTest = await deployContract(
-                admin,
-                AssetTokenBaseTestArtifact,
-                [
-                    eController.address,
-                    amount_,
-                    price_,
-                    rewardPerBlock_,
-                    payment_,
-                    latitude_,
-                    longitude_,
-                    assetPrice_,
-                    interestRate_,
-                    name_,
-                    symbol_,
-                    decimals_,
-                ]
-            ) as AssetTokenBaseTest;
-
             expect(await assetTokenBaseTest.totalSupply()).to.equal(amount_)
             expect(await assetTokenBaseTest.price()).to.equal(price_)
             expect(await assetTokenBaseTest.rewardPerBlock()).to.equal(rewardPerBlock_)
@@ -70,27 +69,6 @@ describe("AssetTokenBase", () => {
     })
 
     context('AssetToken is deployed', async () => {
-
-        beforeEach(async () => {
-            const assetTokenBaseTest = await deployContract(
-                admin,
-                AssetTokenBaseTestArtifact,
-                [
-                    eController.address,
-                    amount_,
-                    price_,
-                    rewardPerBlock_,
-                    payment_,
-                    latitude_,
-                    longitude_,
-                    assetPrice_,
-                    interestRate_,
-                    name_,
-                    symbol_,
-                    decimals_,
-                ]
-            ) as AssetTokenBaseTest;
-        })
 
         it('Admin can set EController', async () => {
 

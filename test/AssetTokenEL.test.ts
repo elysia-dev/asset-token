@@ -1,17 +1,15 @@
 import { assert, expect } from "chai";
-import { ethers, waffle } from "hardhat";
+import { waffle } from "hardhat";
 import { EController } from "../typechain/EController";
 import { AssetTokenEL } from "../typechain/AssetTokenEL"
-import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
 import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
 import { TestnetEL } from "../typechain/TestnetEL"
-import { expandToDecimals, makeAssetTokenBase } from "./Utils/AssetToken";
+import { expandToDecimals } from "./Utils/AssetToken";
 import { deployContract } from "ethereum-waffle";
 import AssetTokenELArtifact from "../artifacts/contracts/AssetTokenEl.sol/AssetTokenEL.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
 import TestnetELArtifact from "../artifacts/contracts/test/TestnetEL.sol/TestnetEL.json"
 import EPriceOracleTestArtifact from "../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
-import { ECHILD } from "constants";
 
 describe("AssetTokenEl", () => {
     let assetTokenEL: AssetTokenEL;
@@ -250,6 +248,33 @@ describe("AssetTokenEl", () => {
             catch (error) {
                 assert.include(error.message, 'Restricted');
             }
+        })
+    })
+
+    context('Asset token Pausable', async () => {
+        it('Admin can pause asset token', async () => {
+            await expect(assetTokenEL.connect(admin).pause())
+                .to.emit(assetTokenEL, 'Paused')
+                .withArgs(admin.address)
+        })
+
+        it('cannot execute purchase, refund and claimReward when paused', async () => {
+            await el.connect(admin).transfer(account1.address, expandToDecimals(10000, 18))
+            await el.connect(admin).transfer(assetTokenEL.address, expandToDecimals(10000, 18))
+            await el.connect(account1).approve(
+                assetTokenEL.address,
+                elTotalSupply
+            )
+            await eController.connect(admin).addAddressToWhitelist(account1.address);
+
+            await assetTokenEL.connect(admin).pause();
+
+            await expect(assetTokenEL.connect(account1).purchase(20))
+                .to.be.revertedWith('Pausable: paused')
+            await expect(assetTokenEL.connect(account1).refund(20))
+                .to.be.revertedWith('Pausable: paused')
+            await expect(assetTokenEL.connect(account1).claimReward())
+                .to.be.revertedWith('Pausable: paused')
         })
     })
 })

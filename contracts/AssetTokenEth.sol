@@ -109,8 +109,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     function claimReward()
         external
         override
-        onlyWhitelisted(msg.sender)
         whenNotPaused
+        onlyWhitelisted(msg.sender)
     {
         uint256 reward =
             getReward(msg.sender).mul(1e18).div(eController.getPrice());

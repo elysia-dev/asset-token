@@ -94,13 +94,8 @@ describe("AssetTokenEth", () => {
         })
 
         it('if msg.value does not have sufficient eth balance, transfer is failed', async () => {
-            try {
-                await assetTokenEth.connect(account1).purchase(10);
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'Not enough msg.value');
-            }
+            await expect(assetTokenEth.connect(account1).purchase(10))
+                .to.be.revertedWith('Not enough msg.value')
         })
     })
 
@@ -135,13 +130,9 @@ describe("AssetTokenEth", () => {
 
         it('if account does not have sufficient allowed balance, transfer is failed', async () => {
             await admin.sendTransaction({ to: assetTokenEth.address, value: ethers.utils.parseEther("50") })
-            try {
-                await assetTokenEth.connect(account1).refund(10);
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'AssetToken: Insufficient seller balance.');
-            }
+
+            await expect(assetTokenEth.connect(account1).refund(10))
+                .to.be.revertedWith('AssetToken: Insufficient seller balance.')
         })
     })
 
@@ -170,18 +161,12 @@ describe("AssetTokenEth", () => {
 
             await expect(await assetTokenEth.connect(account1).claimReward())
                 .to.changeEtherBalance(account1, expectedReward)
-            console.log("expected Reward:", expectedReward.toString())
         })
 
         it('Not whitelisted account cannot claim reward.', async () => {
             expect(await assetTokenEth.getReward(account2.address)).not.to.be.equal(0);
-            try {
-                await assetTokenEth.connect(account2).claimReward()
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'Restricted');
-            }
+            await expect(assetTokenEth.connect(account2).claimReward())
+                .to.be.revertedWith('Restricted')
         })
     })
 
@@ -197,13 +182,29 @@ describe("AssetTokenEth", () => {
         })
 
         it('account cannot withdraw ether.', async () => {
-            try {
-                await assetTokenEth.connect(account1).withdrawToAdmin()
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'Restricted');
-            }
+            await expect(assetTokenEth.connect(account1).withdrawToAdmin())
+                .to.be.revertedWith('Restricted')
+        })
+    })
+
+    context('Asset token Pausable', async () => {
+        it('Admin can pause asset token', async () => {
+            await expect(assetTokenEth.connect(admin).pause())
+                .to.emit(assetTokenEth, 'Paused')
+                .withArgs(admin.address)
+        })
+
+        it('cannot execute purchase, refund and claimReward when paused', async () => {
+            await eController.connect(admin).addAddressToWhitelist(account1.address);
+
+            await assetTokenEth.connect(admin).pause();
+
+            await expect(assetTokenEth.purchase(20))
+                .to.be.revertedWith('Pausable: paused')
+            await expect(assetTokenEth.refund(20))
+                .to.be.revertedWith('Pausable: paused')
+            await expect(assetTokenEth.claimReward())
+                .to.be.revertedWith('Pausable: paused')
         })
     })
 })
