@@ -141,11 +141,11 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         uint256 amount
     ) internal view {
         require(
-            _el.balanceOf(buyer) > amount.mul(eController.mulPrice(price, payment)),
+            _el.balanceOf(buyer) >= amount.mul(eController.mulPrice(price, payment)),
             "AssetToken: Insufficient buyer el balance."
         );
         require(
-            balanceOf(seller) > amount,
+            balanceOf(seller) >= amount,
             "AssetToken: Insufficient seller balance."
         );
     }

@@ -144,7 +144,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         uint256 amount
     ) internal view {
         require(
-            balanceOf(seller) > amount,
+            balanceOf(seller) >= amount,
             "AssetToken: Insufficient seller balance."
         );
     }
