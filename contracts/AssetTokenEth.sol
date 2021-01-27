@@ -8,6 +8,7 @@ import "./AssetTokenBase.sol";
 
 contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     using SafeMath for uint256;
+    using AssetTokenLibrary for ExchangeLocalVars;
 
     /// @notice Emitted when an user claimed reward
     event RewardClaimed(address account, uint256 reward);
@@ -59,8 +60,14 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {
         _checkBalance(address(this), amount);
 
+        ExchangeLocalVars memory vars =
+            ExchangeLocalVars({
+                currencyPrice: eController.getPrice(payment),
+                assetTokenPrice: price
+            });
+
         require(
-            msg.value == amount.mul(eController.mulPrice(price, payment)),
+            msg.value == amount.mul(vars.mulPrice()),
             "Not enough msg.value"
         );
         _transfer(address(this), msg.sender, amount);
@@ -82,10 +89,16 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {
         _checkBalance(msg.sender, amount);
 
+        ExchangeLocalVars memory vars =
+            ExchangeLocalVars({
+                currencyPrice: eController.getPrice(payment),
+                assetTokenPrice: price
+            });
+
         _transfer(msg.sender, address(this), amount);
 
         require(
-            msg.sender.send(amount.mul(eController.mulPrice(price, payment))),
+            msg.sender.send(amount.mul(vars.mulPrice())),
             "Eth : send failed"
         );
     }

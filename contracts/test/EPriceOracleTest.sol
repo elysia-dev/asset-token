@@ -12,7 +12,6 @@ import "../Library.sol";
  */
 contract EPriceOracleTest is IEPriceOracle {
     using SafeMath for uint256;
-    using AssetTokenLibrary for ExchangeLocalVars;
 
     /// @notice Emitted when el Price is changed
     event NewElPrice(uint256 newElPrice);
@@ -34,21 +33,6 @@ contract EPriceOracleTest is IEPriceOracle {
 
     function getPrice() external view override returns (uint256) {
         return _elPrice;
-    }
-
-    function mulPrice(uint256 price)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
-                currencyPrice: _elPrice,
-                assetTokenPrice: price
-            });
-
-        return vars.mulPrice();
     }
 
     function setPrice(uint256 elPrice_) external returns (bool) {

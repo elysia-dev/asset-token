@@ -15,7 +15,6 @@ import "./Library.sol";
 contract EPriceOracleEth is IEPriceOracle {
     using SafeCast for int256;
     using SafeMath for uint256;
-    using AssetTokenLibrary for ExchangeLocalVars;
 
     address public admin;
 
@@ -33,21 +32,6 @@ contract EPriceOracleEth is IEPriceOracle {
 
     function getPrice() external view override returns (uint256) {
         return _getEthPrice();
-    }
-
-    function mulPrice(uint256 price)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
-                currencyPrice: _getEthPrice(),
-                assetTokenPrice: price
-            });
-
-        return vars.mulPrice();
     }
 
     function _getEthPrice() internal view returns (uint256) {

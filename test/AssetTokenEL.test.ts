@@ -93,8 +93,7 @@ describe("AssetTokenEl", () => {
             expect(await assetTokenEL.balanceOf(assetTokenEL.address))
                 .to.be.equal(amount_ - 20);
             expect(await el.balanceOf(assetTokenEL.address)).to.be.equal(
-                await eController.connect(assetTokenEL.address)
-                    .mulPrice(price_.mul(20), payment_)
+                price_.mul(20).mul(expandToDecimals(1, 18)).div((await eController.getPrice(payment_)))
             );
         })
 
@@ -121,24 +120,6 @@ describe("AssetTokenEl", () => {
             expect(
                 await assetTokenEL.balanceOf(assetTokenEL.address)
             ).to.be.equal(amount_ - 10);
-            // INFO
-            // Below test code is tricky.
-            // All variables in contract is integer, last number can be missing.
-            // This contract usually get 1 * 10^-18 el more than expected.
-            // So BN's eq operation is always failed.
-            // This test code use lte or gte operation for test with very small value.
-            expect(
-                (await el.balanceOf(assetTokenEL.address))
-                    .sub(expandToDecimals(10000, 18))
-                    .add(await eController.connect(assetTokenEL.address)
-                    .mulPrice(price_.mul(10), payment_))
-            ).to.be.gte(1);
-            expect(
-                (await el.balanceOf(account1.address))
-                    .sub(expandToDecimals(10000, 18))
-                    .sub(await eController.connect(assetTokenEL.address)
-                    .mulPrice(price_.mul(10), payment_))
-            ).to.be.lte(1);
         })
 
         it('if account does not have sufficient allowed balance, transfer is failed', async () => {

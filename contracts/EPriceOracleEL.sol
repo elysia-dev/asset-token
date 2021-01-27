@@ -11,8 +11,6 @@ import "./Library.sol";
  * @author Elysia
  */
 contract EPriceOracleEL is IEPriceOracle {
-    using SafeMath for uint256;
-    using AssetTokenLibrary for ExchangeLocalVars;
 
     /// @notice Emitted when el Price is changed
     event NewElPrice(uint256 newElPrice);
@@ -36,24 +34,10 @@ contract EPriceOracleEL is IEPriceOracle {
         return _elPrice;
     }
 
-    function mulPrice(uint256 price)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
-                currencyPrice: _elPrice,
-                assetTokenPrice: price
-            });
-
-        return vars.mulPrice();
-    }
-
     function setElPrice(uint256 elPrice_) external returns (bool) {
         require(msg.sender == admin, "Restricted to admin.");
 
+        _elPrice = elPrice_;
         emit NewElPrice(elPrice_);
 
         return true;

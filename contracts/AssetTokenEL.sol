@@ -8,6 +8,7 @@ import "./AssetTokenBase.sol";
 
 contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
     using SafeMath for uint256;
+    using AssetTokenLibrary for ExchangeLocalVars;
 
     IERC20 private _el;
 
@@ -63,11 +64,17 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
     {
         _checkBalance(msg.sender, address(this), amount);
 
+        ExchangeLocalVars memory vars =
+            ExchangeLocalVars({
+                currencyPrice: eController.getPrice(payment),
+                assetTokenPrice: price
+            });
+
         require(
             _el.transferFrom(
                 msg.sender,
                 address(this),
-                amount.mul(eController.mulPrice(price, payment))
+                amount.mul(vars.mulPrice())
             ),
             "EL : transferFrom failed"
         );
@@ -90,8 +97,14 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
     {
         _checkBalance(address(this), msg.sender, amount);
 
+        ExchangeLocalVars memory vars =
+            ExchangeLocalVars({
+                currencyPrice: eController.getPrice(payment),
+                assetTokenPrice: price
+            });
+
         require(
-            _el.transfer(msg.sender, amount.mul(eController.mulPrice(price, payment))),
+            _el.transfer(msg.sender, amount.mul(vars.mulPrice())),
             "EL : transfer failed"
         );
         _transfer(msg.sender, address(this), amount);
@@ -140,8 +153,15 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         address seller,
         uint256 amount
     ) internal view {
+
+        ExchangeLocalVars memory vars =
+            ExchangeLocalVars({
+                currencyPrice: eController.getPrice(payment),
+                assetTokenPrice: price
+            });
+
         require(
-            _el.balanceOf(buyer) >= amount.mul(eController.mulPrice(price, payment)),
+            _el.balanceOf(buyer) >= amount.mul(vars.mulPrice()),
             "AssetToken: Insufficient buyer el balance."
         );
         require(

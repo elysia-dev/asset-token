@@ -125,11 +125,6 @@ describe("Controller", () => {
             expect(await eController.connect(assetTokenBase1.address).getPrice(await assetTokenBase1.getPayment()))
                 .to.equal(await ePriceOracleTest1.getPrice())
         })
-
-        it("mulPrice return exchange ratio", async () => {
-            expect(await eController.connect(assetTokenBase0.address).mulPrice(expandToDecimals(5, 18), await assetTokenBase0.getPayment()))
-                .to.equal(expandToDecimals(1, 21))
-        })
     })
 
     context('.whitelist', async () => {

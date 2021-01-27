@@ -81,8 +81,7 @@ describe("AssetTokenEth", () => {
             expect(await assetTokenEth.balanceOf(assetTokenEth.address))
                 .to.be.equal(amount_ - 20);
             expect(afterBalance.sub(beforeBalance)).to.be.equal(
-                await eController.connect(assetTokenEth.address)
-                    .mulPrice(price_.mul(20), payment_)
+                price_.mul(20).mul(expandToDecimals(1, 18)).div((await eController.getPrice(payment_)))
             );
         })
 
