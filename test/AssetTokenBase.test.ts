@@ -27,12 +27,10 @@ describe("AssetTokenBase", () => {
     const [admin, account1, account2] = provider.getWallets()
 
     beforeEach(async () => {
-
         eController = await deployContract(
             admin,
             EControllerArtifact
         ) as EController
-
         assetTokenBaseTest = await deployContract(
             admin,
             AssetTokenBaseTestArtifact,
@@ -69,18 +67,32 @@ describe("AssetTokenBase", () => {
     })
 
     context('AssetToken is deployed', async () => {
-
         it('Admin can set EController', async () => {
-
+            await expect(assetTokenBaseTest.connect(admin).setEController(eController.address))
+                .to.emit(assetTokenBaseTest, "NewController")
+                .withArgs(eController.address)
         })
+
+        it("General account cannot set EController", async () => {
+            await expect(assetTokenBaseTest.connect(account1).setEController(eController.address))
+                .to.be.revertedWith("Restricted to admin.")
+        });
 
         it('Admin can set RewardPerBlock', async () => {
-
+            const newRewardPerBlock = expandToDecimals(5, 15)
+            await expect(assetTokenBaseTest.connect(admin).setRewardPerBlock(newRewardPerBlock))
+                .to.emit(assetTokenBaseTest, "NewRewardPerBlock")
+                .withArgs(newRewardPerBlock)
         })
+
+        it("General account cannot set assetToken", async () => {
+            const newRewardPerBlock = expandToDecimals(5, 15)
+            await expect(assetTokenBaseTest.connect(account1).setRewardPerBlock(newRewardPerBlock))
+                .to.be.revertedWith("Restricted to admin.")
+        });
     })
 
     context('Asset Token Reward', async () => {
-
         const account1RewardPerBlock = rewardPerBlock_.mul(10).div(amount_)
 
         it('should accrue reward properly', async () => {
@@ -112,7 +124,6 @@ describe("AssetTokenBase", () => {
                 10)
             const tx1 = await assetTokenBaseTest.saveReward(account1.address);
             const tx2 = await assetTokenBaseTest.saveReward(account1.address);
-
             expect(await assetTokenBaseTest.getReward(account1.address)).to.be.equal(
                 account1RewardPerBlock
                     .mul(
@@ -132,7 +143,6 @@ describe("AssetTokenBase", () => {
             await assetTokenBaseTest.saveReward(account1.address);
             await assetTokenBaseTest.saveReward(account1.address);
             await assetTokenBaseTest.clearReward(account1.address);
-
             expect(await assetTokenBaseTest.getReward(account1.address))
                 .to.be.equal(0)
         })

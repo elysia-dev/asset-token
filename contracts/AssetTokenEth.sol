@@ -56,17 +56,14 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         payable
         override
         whenNotPaused
-        returns (bool)
     {
-        _checkBalance(msg.sender, address(this), amount);
+        _checkBalance(address(this), amount);
 
         require(
-            msg.value == amount.mul(eController.mulPrice(price)),
+            msg.value == amount.mul(eController.mulPrice(price, payment)),
             "Not enough msg.value"
         );
         _transfer(address(this), msg.sender, amount);
-
-        return true;
     }
 
     /**
@@ -82,18 +79,15 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         external
         override
         whenNotPaused
-        returns (bool)
     {
-        _checkBalance(address(this), msg.sender, amount);
+        _checkBalance(msg.sender, amount);
 
         _transfer(msg.sender, address(this), amount);
 
         require(
-            msg.sender.send(amount.mul(eController.mulPrice(price))),
+            msg.sender.send(amount.mul(eController.mulPrice(price, payment))),
             "Eth : send failed"
         );
-
-        return true;
     }
 
     /**
@@ -113,7 +107,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         onlyWhitelisted(msg.sender)
     {
         uint256 reward =
-            getReward(msg.sender).mul(1e18).div(eController.getPrice());
+            getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
 
         require(
             reward < address(this).balance,
@@ -146,7 +140,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * - `amount` seller should have more el than elAmount converted from the amount.
      */
     function _checkBalance(
-        address buyer,
         address seller,
         uint256 amount
     ) internal view {

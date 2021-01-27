@@ -1,27 +1,28 @@
 import { expect } from "chai";
-import { ethers, waffle } from "hardhat";
+import { waffle } from "hardhat";
 import { EController } from "../typechain/EController";
 import { AssetTokenBase } from "../typechain/AssetTokenBase"
 import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
 import { expandToDecimals, makeAssetTokenBase } from "./Utils/AssetToken";
 import { deployContract } from "ethereum-waffle";
 import EPriceOracleTestArtifact from "../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
-
+import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
+import { keccak256, solidityKeccak256, toUtf8Bytes } from "ethers/lib/utils";
 
 describe("Controller", () => {
-
     let eController: EController;
 
     const provider = waffle.provider;
-    const [admin, account1, account2] = provider.getWallets()
+    const [admin, account1, account2, account3, account4, account5] = provider.getWallets()
 
     beforeEach(async () => {
-        const EController = await ethers.getContractFactory("EController");
-        eController = (await EController.connect(admin).deploy()) as EController;
+        eController = await deployContract(
+            admin,
+            EControllerArtifact
+        ) as EController
     });
 
     context(".setEPriceOracle", async () => {
-
         let ePriceOracleTest: EPriceOracleTest;
 
         beforeEach(async () => {
@@ -35,7 +36,6 @@ describe("Controller", () => {
             await expect(eController.connect(admin).setEPriceOracle(ePriceOracleTest.address, 0))
                 .to.emit(eController, "NewPriceOracle")
                 .withArgs(ePriceOracleTest.address)
-
             expect(await eController.ePriceOracle(0)).to.be.equal(ePriceOracleTest.address)
         });
 
@@ -70,70 +70,96 @@ describe("Controller", () => {
         it("Admin can pause asset token", async () => {
             await expect(eController.connect(admin).pauseAssetTokens([assetTokenBase.address]))
                 .to.emit(assetTokenBase, "Paused")
+            expect(await assetTokenBase.paused()).to.be.true
+        });
+
+        it("Admin can unpause asset token", async () => {
+            await expect(eController.connect(admin).pauseAssetTokens([assetTokenBase.address]))
+                .to.emit(assetTokenBase, "Paused")
+            await expect(eController.connect(admin).unpauseAssetTokens([assetTokenBase.address]))
+                .to.emit(assetTokenBase, "Unpaused")
+            expect(await assetTokenBase.paused()).to.be.false
         });
     })
 
     context(".Oracle view function", async () => {
         let ePriceOracleTest0: EPriceOracleTest
         let ePriceOracleTest1: EPriceOracleTest
-
         let assetTokenBase0: AssetTokenBase
         let assetTokenBase1: AssetTokenBase
 
         beforeEach(async () => {
-
             ePriceOracleTest0 = await deployContract(
                 admin,
                 EPriceOracleTestArtifact
             ) as EPriceOracleTest
-
             ePriceOracleTest1 = await deployContract(
                 admin,
                 EPriceOracleTestArtifact
             ) as EPriceOracleTest
-
             assetTokenBase0 = await makeAssetTokenBase
             ({
                 from: admin,
                 eController_: eController.address
             })
-
             assetTokenBase1 = await makeAssetTokenBase
             ({
                 from: admin,
                 eController_: eController.address,
                 payment_: 1
             })
-
             await ePriceOracleTest0.connect(admin).setPrice(expandToDecimals(5, 15))
             await ePriceOracleTest1.connect(admin).setPrice(expandToDecimals(1, 21))
-
             await eController.connect(admin).setAssetTokens(
                 [
                     assetTokenBase0.address,
                     assetTokenBase1.address
                 ])
-
             await eController.connect(admin).setEPriceOracle(ePriceOracleTest0.address, 0)
             await eController.connect(admin).setEPriceOracle(ePriceOracleTest1.address, 1)
         })
 
         it("getPrice return assetToken's payment type price", async () => {
-
-            console.log(await ePriceOracleTest0.getPrice())
-
-            expect(await eController.connect(assetTokenBase0.address).getPrice())
+            expect(await eController.connect(assetTokenBase0.address).getPrice(await assetTokenBase0.getPayment()))
                 .to.equal(await ePriceOracleTest0.getPrice())
-
-            console.log(await ePriceOracleTest1.getPrice())
-
-            expect(await eController.connect(assetTokenBase1.address).getPrice())
+            expect(await eController.connect(assetTokenBase1.address).getPrice(await assetTokenBase1.getPayment()))
                 .to.equal(await ePriceOracleTest1.getPrice())
         })
 
         it("mulPrice return exchange ratio", async () => {
-            expect(await eController.connect(assetTokenBase0.address).mulPrice(expandToDecimals(5, 18)))
+            expect(await eController.connect(assetTokenBase0.address).mulPrice(expandToDecimals(5, 18), await assetTokenBase0.getPayment()))
                 .to.equal(expandToDecimals(1, 21))
         })
+    })
+
+    context('.whitelist', async () => {
+        const WHITELISTED = keccak256(toUtf8Bytes("WHITELISTED"))
+
+        it("Admin can add whitelist", async () => {
+            await expect(eController.connect(admin).addAddressToWhitelist(account1.address))
+                .to.emit(eController, "RoleGranted")
+                .withArgs(WHITELISTED, account1.address, admin.address)
+            expect(await eController.hasRole(WHITELISTED, account1.address))
+                .to.be.true
+        });
+
+        it("Admin can add multi addresses to whitelist", async () => {
+            await expect(eController.connect(admin).addAddressesToWhitelist([account1.address, account2.address]))
+                .to.emit(eController, "RoleGranted")
+            expect(await eController.getRoleMember(WHITELISTED, 0))
+                .to.be.equal(account1.address)
+            expect(await eController.getRoleMember(WHITELISTED, 1))
+                .to.be.equal(account2.address)
+            expect(await eController.getRoleMemberCount(WHITELISTED))
+                .to.be.equal(2)
+        });
+
+        it("General account cannot add whitelist", async () => {
+            await expect(eController.connect(account1).addAddressToWhitelist(account1.address))
+                .to.be.revertedWith("Restricted to admin.")
+        });
+
+        it("Admin can pause asset token", async () => {
+        });
     })
 });

@@ -7,20 +7,14 @@ import "./EPriceOracleEth.sol";
 import "./IAssetToken.sol";
 
 interface IEController {
-    function mulPrice(uint price) external view returns (uint);
-    function getPrice() external view returns (uint);
+    function mulPrice(uint price, uint payment) external view returns (uint);
+    function getPrice(uint payment) external view returns (uint);
     function addAddressToWhitelist(address account) external;
-
     function addAddressesToWhitelist(address[] memory accounts) external;
-
     function removeAddressFromWhitelist(address account) external;
-
     function removeAddressesFromWhitelist(address[] memory accounts) external;
-
     function changeWhitelistedAccount(address account) external;
-
     function isWhitelisted(address account) external view returns (bool);
-
     function isAdmin(address account) external view returns (bool);
 }
 
@@ -55,13 +49,13 @@ contract EController is IEController, AccessControl {
 
     /*** Oracle View functions ***/
 
-    function mulPrice(uint price) external view override returns (uint) {
-        IEPriceOracle oracle = ePriceOracle[assetPayment[msg.sender]];
+    function mulPrice(uint price, uint payment) external view override returns (uint) {
+        IEPriceOracle oracle = ePriceOracle[payment];
         return oracle.mulPrice(price);
     }
 
-    function getPrice() external view override returns (uint256) {
-        IEPriceOracle oracle = ePriceOracle[assetPayment[msg.sender]];
+    function getPrice(uint payment) external view override returns (uint256) {
+        IEPriceOracle oracle = ePriceOracle[payment];
         return oracle.getPrice();
     }
 

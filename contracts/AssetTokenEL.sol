@@ -60,7 +60,6 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         external
         override
         whenNotPaused
-        returns (bool)
     {
         _checkBalance(msg.sender, address(this), amount);
 
@@ -68,12 +67,11 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
             _el.transferFrom(
                 msg.sender,
                 address(this),
-                amount.mul(eController.mulPrice(price))
+                amount.mul(eController.mulPrice(price, payment))
             ),
             "EL : transferFrom failed"
         );
         _transfer(address(this), msg.sender, amount);
-        return true;
     }
 
     /**
@@ -89,17 +87,14 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         external
         override
         whenNotPaused
-        returns (bool)
     {
         _checkBalance(address(this), msg.sender, amount);
 
         require(
-            _el.transfer(msg.sender, amount.mul(eController.mulPrice(price))),
+            _el.transfer(msg.sender, amount.mul(eController.mulPrice(price, payment))),
             "EL : transfer failed"
         );
         _transfer(msg.sender, address(this), amount);
-
-        return true;
     }
 
     /**
@@ -119,7 +114,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         onlyWhitelisted(msg.sender)
     {
         uint256 reward =
-            getReward(msg.sender).mul(1e18).div(eController.getPrice());
+            getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
 
         require(
             reward < _el.balanceOf(address(this)),
@@ -146,7 +141,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         uint256 amount
     ) internal view {
         require(
-            _el.balanceOf(buyer) > amount.mul(eController.mulPrice(price)),
+            _el.balanceOf(buyer) > amount.mul(eController.mulPrice(price, payment)),
             "AssetToken: Insufficient buyer el balance."
         );
         require(

@@ -45,17 +45,14 @@ describe("AssetTokenEl", () => {
                 18
             ]
         ) as TestnetEL;
-
         ePriceOracleEL = await deployContract(
             admin,
             EPriceOracleTestArtifact
         ) as EPriceOracleTest;
-
         eController = await deployContract(
             admin,
             EControllerArtifact
         ) as EController
-
         assetTokenEL = await deployContract(
             admin,
             AssetTokenELArtifact,
@@ -75,7 +72,6 @@ describe("AssetTokenEl", () => {
                 decimals_,
             ]
         ) as AssetTokenEL;
-
         await eController.connect(admin)
             .setEPriceOracle(ePriceOracleEL.address, 0)
         await eController.connect(admin)
@@ -91,51 +87,40 @@ describe("AssetTokenEl", () => {
                 assetTokenEL.address,
                 elTotalSupply
             )
-
             await assetTokenEL.connect(account1).purchase(20)
-
             expect(await assetTokenEL.balanceOf(account1.address))
                 .to.be.equal(20);
-
             expect(await assetTokenEL.balanceOf(assetTokenEL.address))
                 .to.be.equal(amount_ - 20);
-
             expect(await el.balanceOf(assetTokenEL.address)).to.be.equal(
                 await eController.connect(assetTokenEL.address)
-                    .mulPrice(price_.mul(20))
+                    .mulPrice(price_.mul(20), payment_)
             );
         })
 
         it('if account does not have sufficient allowed el balance, transfer is failed', async () => {
-            try {
-                await assetTokenEL.connect(account1).purchase(10);
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'Insufficient');
-            }
+            await expect(assetTokenEL.connect(account1).purchase(10))
+                .to.be.revertedWith('AssetToken: Insufficient buyer el balance.')
         })
     })
 
     context(".refund", async () => {
+        beforeEach(async () => {
+            await el.connect(admin).transfer(assetTokenEL.address, expandToDecimals(10000, 18))
+        })
+
         it('if account and contract has sufficient balance, refund token', async () => {
             await el.connect(admin).transfer(account1.address, expandToDecimals(10000, 18))
-            await el.connect(admin).transfer(assetTokenEL.address, expandToDecimals(10000, 18))
             await el.connect(account1).approve(
                 assetTokenEL.address,
                 elTotalSupply
             )
-
             await assetTokenEL.connect(account1).purchase(20)
-
             await assetTokenEL.connect(account1).refund(10)
-
             expect(await assetTokenEL.balanceOf(account1.address)).to.be.equal(10);
-
             expect(
                 await assetTokenEL.balanceOf(assetTokenEL.address)
             ).to.be.equal(amount_ - 10);
-
             // INFO
             // Below test code is tricky.
             // All variables in contract is integer, last number can be missing.
@@ -146,37 +131,25 @@ describe("AssetTokenEl", () => {
                 (await el.balanceOf(assetTokenEL.address))
                     .sub(expandToDecimals(10000, 18))
                     .add(await eController.connect(assetTokenEL.address)
-                    .mulPrice(price_.mul(10)))
+                    .mulPrice(price_.mul(10), payment_))
             ).to.be.gte(1);
-
             expect(
                 (await el.balanceOf(account1.address))
                     .sub(expandToDecimals(10000, 18))
                     .sub(await eController.connect(assetTokenEL.address)
-                    .mulPrice(price_.mul(10)))
+                    .mulPrice(price_.mul(10), payment_))
             ).to.be.lte(1);
         })
 
         it('if account does not have sufficient allowed balance, transfer is failed', async () => {
-            try {
-                await assetTokenEL.connect(account1).refund(10);
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'Insufficient');
-            }
+            await expect(assetTokenEL.connect(account1).refund(10))
+                .to.be.revertedWith('AssetToken: Insufficient seller balance.')
         })
 
         it('if account does not have sufficient balance, transfer is failed', async () => {
             await assetTokenEL.connect(account1).approve(assetTokenEL.address, amount_)
-
-            try {
-                await assetTokenEL.connect(account1).refund(10);
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'Insufficient');
-            }
+            await expect(assetTokenEL.connect(account1).refund(10))
+                .to.be.revertedWith('AssetToken: Insufficient seller balance.')
         })
     })
 
@@ -192,42 +165,30 @@ describe("AssetTokenEl", () => {
                 assetTokenEL.address,
                 elTotalSupply
             );
-
             firstBlock = (await (await assetTokenEL.connect(account1).purchase(20)).wait()).blockNumber;
-
             await eController.connect(admin).addAddressToWhitelist(account1.address);
-
             await el.connect(account1).transfer(account2.address, await el.balanceOf(account1.address));
-
             secondBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
             thirdBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
         })
 
         it('whitelisted account can claim reward.', async () => {
-            await assetTokenEL.connect(account1).claimReward()
-
             const expectedReward = rewardPerBlock_
-                .mul(
-                    expandToDecimals((
-                        (20 * (secondBlock - firstBlock)) +
-                        (10 * (thirdBlock - secondBlock))
-                        ), 18))
-                .div(amount_)
-                .div(expandToDecimals(4, 16))
-
+            .mul(
+                expandToDecimals((
+                    (20 * (secondBlock - firstBlock)) +
+                    (10 * (thirdBlock - secondBlock))
+                    ), 18))
+            .div(amount_)
+            .div(expandToDecimals(4, 16))
+            await assetTokenEL.connect(account1).claimReward()
             expect(await el.balanceOf(account1.address)).to.be.equal(expectedReward);
         })
 
         it('Not whitelisted account cannot claim reward.', async () => {
             expect(await assetTokenEL.getReward(account2.address)).not.to.be.equal(0);
-
-            try {
-                await assetTokenEL.connect(account2).claimReward()
-                assert.fail("The method should have thrown an error");
-            }
-            catch (error) {
-                assert.include(error.message, 'Restricted');
-            }
+            await expect(assetTokenEL.connect(account2).claimReward())
+                .to.be.revertedWith('Restricted to whitelisted.')
         })
     })
 
@@ -238,7 +199,6 @@ describe("AssetTokenEl", () => {
 
         it('admin can withdrwal all el.', async () => {
             await assetTokenEL.connect(admin).withdrawToAdmin();
-
             expect(await el.balanceOf(assetTokenEL.address)).to.be.equal(0);
             expect(await el.balanceOf(admin.address)).to.be.equal(elTotalSupply);
         })
@@ -269,9 +229,7 @@ describe("AssetTokenEl", () => {
                 elTotalSupply
             )
             await eController.connect(admin).addAddressToWhitelist(account1.address);
-
             await assetTokenEL.connect(admin).pause();
-
             await expect(assetTokenEL.connect(account1).purchase(20))
                 .to.be.revertedWith('Pausable: paused')
             await expect(assetTokenEL.connect(account1).refund(20))
