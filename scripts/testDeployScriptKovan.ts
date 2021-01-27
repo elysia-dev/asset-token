@@ -9,8 +9,11 @@ import ePriceOracleEthArguments from "./deployArguments/EPriceOracleEth";
 import assetTokenELArguments from "./deployArguments/AssetTokenEL";
 import assetTokenEthArguments from "./deployArguments/AssetTokenEth";
 import testnetELArguements from "./deployArguments/TestnetEL";
+import { exec } from "child_process";
 
 async function main() {
+  console.log("Deploy start")
+
   const EPriceOracleEth = await hardhat.ethers.getContractFactory(
     "EPriceOracleEth"
   );
@@ -21,30 +24,23 @@ async function main() {
   const TestnetEL = await hardhat.ethers.getContractFactory("TestnetEL")
 
   const ePriceOracleEL = await EPriceOracleEL.deploy();
+  console.log("ePriceOracleEL address:", ePriceOracleEL.address);
+
   const ePriceOracleEth = await EPriceOracleEth.deploy(
     ePriceOracleEthArguments.priceFeed
   );
+  console.log("ePriceOracleEth address:", ePriceOracleEth.address);
+
   const controller = await EController.deploy();
+  console.log("controller address:", controller.address);
+
   const testnetEL = await TestnetEL.deploy(
     testnetELArguements.totalSupply_,
     testnetELArguements.name_,
     testnetELArguements.symbol_,
     testnetELArguements.decimals_
   );
-
-  console.log("Deploy start")
-  await ePriceOracleEL.deployed();
-  console.log("ePriceOracleEL address:", ePriceOracleEL.address);
-
-  await ePriceOracleEth.deployed();
-  console.log("ePriceOracleEth address:", ePriceOracleEth.address);
-
-  await controller.deployed();
-  console.log("controller address:", controller.address);
-
-  await testnetEL.deployed()
-  console.log("kovalEl address:", testnetEL.address);
-
+  console.log("kovanEl address:", testnetEL.address);
 
   assetTokenELArguments.eController_ = controller.address;
   assetTokenELArguments.el_ = testnetEL.address;
@@ -89,12 +85,29 @@ async function main() {
     assetTokenEL.address,
     assetTokenEth.address,
   ]);
+
+  exec(`EL=${testnetEL.address}\
+    CONTROLLER=${controller.address}\
+    PRICE_ORACLE_EL=${ePriceOracleEL.address}\
+    PRICE_ORACLE_ETH=${ePriceOracleEth.address}\
+    ASSET_TOKEN_ETH=${assetTokenEth.address}\
+    ASSET_TOKEN_EL=${assetTokenEL.address}\
+    yarn ts-node scripts/testVerifyScriptKovan.ts`, (error, stdout, stderr) => {
+    if (error) {
+      console.log(`error: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.log(`stderr: ${stderr}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+  });
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main()
-  .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);
     process.exit(1);
