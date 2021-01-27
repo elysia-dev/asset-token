@@ -159,7 +159,26 @@ describe("Controller", () => {
                 .to.be.revertedWith("Restricted to admin.")
         });
 
-        it("Admin can pause asset token", async () => {
+        it("Admin can remove whitelist", async () => {
+            await eController.connect(admin).addAddressToWhitelist(account1.address)
+            await expect(eController.connect(admin).removeAddressFromWhitelist(account1.address))
+                .to.emit(eController, "RoleRevoked")
+                .withArgs(WHITELISTED, account1.address, admin.address)
+            expect(await eController.hasRole(WHITELISTED, account1.address))
+                .to.be.false
         });
+
+        it("whitelisted user can change whitelisted account", async () => {
+            await eController.connect(admin).addAddressToWhitelist(account1.address)
+            await expect(eController.connect(account1).changeWhitelistedAccount(account2.address))
+                .to.emit(eController, "RoleGranted")
+                .withArgs(WHITELISTED, account1.address, admin.address)
+                .to.emit(eController, "RoleRevoked")
+                .withArgs(WHITELISTED, account1.address, admin.address)
+            expect(await eController.hasRole(WHITELISTED, account1.address))
+                .to.be.false
+            expect(await eController.hasRole(WHITELISTED, account2.address))
+                .to.be.true
+        })
     })
 });

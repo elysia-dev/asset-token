@@ -188,7 +188,11 @@ contract EController is IEController, AccessControl {
     }
 
     /// @dev Return `true` if the account belongs to the admin role.
-    function isAdmin(address account) external view override returns (bool) {
+    function isAdmin(address account)
+        external
+        view
+        override
+        returns (bool) {
         return _isAdmin(account);
     }
 
