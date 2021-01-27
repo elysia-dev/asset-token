@@ -1,9 +1,3 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
-
 import hardhat from 'hardhat';
 import ePriceOracleEthArguments from "./deployArguments/EPriceOracleEth";
 import assetTokenELArguments from "./deployArguments/AssetTokenEL";
@@ -105,8 +99,6 @@ async function main() {
   });
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main()
   .catch((error) => {
     console.error(error);
