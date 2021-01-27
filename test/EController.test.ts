@@ -172,9 +172,9 @@ describe("Controller", () => {
             await eController.connect(admin).addAddressToWhitelist(account1.address)
             await expect(eController.connect(account1).changeWhitelistedAccount(account2.address))
                 .to.emit(eController, "RoleGranted")
-                .withArgs(WHITELISTED, account1.address, admin.address)
+                .withArgs(WHITELISTED, account2.address, account1.address)
                 .to.emit(eController, "RoleRevoked")
-                .withArgs(WHITELISTED, account1.address, admin.address)
+                .withArgs(WHITELISTED, account1.address, account1.address)
             expect(await eController.hasRole(WHITELISTED, account1.address))
                 .to.be.false
             expect(await eController.hasRole(WHITELISTED, account2.address))

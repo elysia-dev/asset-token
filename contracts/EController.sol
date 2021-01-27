@@ -159,8 +159,8 @@ contract EController is IEController, AccessControl {
         override
         onlyWhitelisted()
     {
-        grantRole(WHITELISTED, account);
-        revokeRole(WHITELISTED, msg.sender);
+        _setupRole(WHITELISTED, account);
+        renounceRole(WHITELISTED, msg.sender);
     }
 
     /*** Access Controllers ***/
