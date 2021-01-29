@@ -2,10 +2,9 @@ import hardhat from 'hardhat';
 import ePriceOracleEthArguments from "./deployArguments/EPriceOracleEth";
 import assetTokenELArguments from "./deployArguments/AssetTokenEL";
 import assetTokenEthArguments from "./deployArguments/AssetTokenEth";
-import { exec } from "child_process";
 
 async function main() {
-  console.log("Mainnet Deploy start")
+  console.log(`${hardhat.network.name} deploy start`)
 
   const EPriceOracleEth = await hardhat.ethers.getContractFactory(
     "EPriceOracleEth"
@@ -16,18 +15,18 @@ async function main() {
   const AssetTokenEth = await hardhat.ethers.getContractFactory("AssetTokenEth");
 
   const ePriceOracleEL = await EPriceOracleEL.deploy();
-  console.log("ePriceOracleEL address:", ePriceOracleEL.address);
+  console.log(`ePriceOracleEL:${ePriceOracleEL.address}`);
 
   const ePriceOracleEth = await EPriceOracleEth.deploy(
     ePriceOracleEthArguments.priceFeed
   );
-  console.log("ePriceOracleEth address:", ePriceOracleEth.address);
+  console.log(`ePriceOracleEth:${ePriceOracleEth.address}`);
 
   const controller = await EController.deploy();
-  console.log("controller address:", controller.address);
+  console.log(`controller:${controller.address}`);
 
   assetTokenELArguments.eController_ = controller.address;
-  assetTokenELArguments.el_ = "0x2781246fe707bb15cee3e5ea354e2154a2877b16";
+  assetTokenELArguments.el_ = "0x2781246fe707bb15cee3e5ea354e2154a2877b16"; // mainnet el
   assetTokenEthArguments.eController_ = controller.address;
 
   const assetTokenEL = await AssetTokenEL.deploy(
@@ -45,7 +44,7 @@ async function main() {
     assetTokenELArguments.symbol_,
     assetTokenELArguments.decimals_
   );
-  console.log("assetTokenEL address", assetTokenEL.address);
+  console.log(`assetTokenEL:${assetTokenEL.address}`);
 
   const assetTokenEth = await AssetTokenEth.deploy(
     assetTokenEthArguments.eController_,
@@ -61,7 +60,7 @@ async function main() {
     assetTokenEthArguments.symbol_,
     assetTokenEthArguments.decimals_
   );
-  console.log("assetTokenEth address", assetTokenEth.address);
+  console.log(`assetTokenEth:${assetTokenEth.address}`);
 
   await controller.setEPriceOracle(ePriceOracleEL.address, 0);
   await controller.setEPriceOracle(ePriceOracleEth.address, 1);
@@ -69,24 +68,6 @@ async function main() {
     assetTokenEL.address,
     assetTokenEth.address,
   ]);
-
-  exec(`EL=${"0x2781246fe707bb15cee3e5ea354e2154a2877b16"}\
-    CONTROLLER=${controller.address}\
-    PRICE_ORACLE_EL=${ePriceOracleEL.address}\
-    PRICE_ORACLE_ETH=${ePriceOracleEth.address}\
-    ASSET_TOKEN_ETH=${assetTokenEth.address}\
-    ASSET_TOKEN_EL=${assetTokenEL.address}\
-    yarn ts-node scripts/testVerifyScriptKovan.ts`, (error, stdout, stderr) => {
-    if (error) {
-      console.log(`error: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.log(`stderr: ${stderr}`);
-      return;
-    }
-    console.log(`stdout: ${stdout}`);
-  });
 }
 
 main()

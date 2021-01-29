@@ -1,28 +1,26 @@
+import hardhat from 'hardhat';
 import { exec } from "child_process";
 
-const el = process.env.EL;
-const priceOracleEl = process.env.PRICE_ORACLE_EL;
-const priceOracleEth = process.env.PRICE_ORACLE_ETH;
-const assetTokenEl = process.env.ASSET_TOKEN_EL;
-const assetTokenEth = process.env.ASSET_TOKEN_ETH;
-const controller = process.env.CONTROLLER;
+const el = "0x2781246fe707bb15cee3e5ea354e2154a2877b16";
+// Deployscript Result
+const txResult = `
+ePriceOracleEL:0x4335AFb7CE6C815eBaAb4f9A3F3fBd51b686480e
+ePriceOracleEth:0x6E8DfFA9dcc2c41D6fa2888eb0E479F9e4F4846E
+controller:0x99fB964b68F08846D11537005d9Ab272D740A19a
+assetTokenEL:0x4ADDFEE8F0F6af9d1d67D6328801bee3D70722eB
+assetTokenEth:0x7a747c0b66FBc2597C71fD0cEd772BD0d8Cc130b
+`;
 
-// Verify EL Token
-/*exec(`yarn hardhat verify --network mainnet --constructor-args scripts/verifyArguments/testnetELVerify.js ${el}`, (error, stdout, stderr) => {
-  if (error) {
-    console.log(`error: ${error.message}`);
-    return;
-  }
-  if (stderr) {
-    console.log(`stderr: ${stderr}`);
-    return;
-  }
-  console.log(`stdout: ${stdout}`);
-});
-*/
+const [
+  priceOracleEl,
+  priceOracleEth,
+  controller,
+  assetTokenEl,
+  assetTokenEth
+] = txResult.split('\n').filter((body) => body).map((result) => result.split(':')[1]);
 
 // Verify Controller
-exec(`yarn hardhat verify --network mainnet ${controller}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${hardhat.network.name} ${controller}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -35,7 +33,7 @@ exec(`yarn hardhat verify --network mainnet ${controller}`, (error, stdout, stde
 });
 
 // Verify PriceOracleEL
-exec(`yarn hardhat verify --network mainnet ${priceOracleEl}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${hardhat.network.name} ${priceOracleEl}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -48,7 +46,7 @@ exec(`yarn hardhat verify --network mainnet ${priceOracleEl}`, (error, stdout, s
 });
 
 // Verify PriceOracleEth
-exec(`yarn hardhat verify --network mainnet --constructor-args scripts/verifyArguments/EPriceOracleEthVerify.js ${priceOracleEth}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${hardhat.network.name} --constructor-args scripts/verifyArguments/EPriceOracleEthVerify.js ${priceOracleEth}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -61,7 +59,7 @@ exec(`yarn hardhat verify --network mainnet --constructor-args scripts/verifyArg
 });
 
 // Verify AssetTokenEl
-exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network mainnet --constructor-args scripts/verifyArguments/AssetTokenELVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
+exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network ${hardhat.network.name} --constructor-args scripts/verifyArguments/AssetTokenELVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -74,7 +72,7 @@ exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network mainnet --
 });
 
 // Verify AssetTokenEth
-exec(`CONTROLLER=${controller} yarn hardhat verify --network mainnet --constructor-args scripts/verifyArguments/AssetTokenEthVerify.js ${assetTokenEth}`, (error, stdout, stderr) => {
+exec(`CONTROLLER=${controller} yarn hardhat verify --network ${hardhat.network.name} --constructor-args scripts/verifyArguments/AssetTokenEthVerify.js ${assetTokenEth}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
