@@ -66,8 +66,13 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
                 assetTokenPrice: price
             });
 
+        // Allow 1% diff caused by chainlink price feed
+        uint256 totalPrice = amount.mul(vars.mulPrice());
+        uint256 minPrice = totalPrice.div(100).mul(99);
+        uint256 maxPrice = totalPrice.div(100).mul(101);
+
         require(
-            msg.value == amount.mul(vars.mulPrice()),
+            msg.value >= minPrice && msg.value <= maxPrice,
             "Not enough msg.value"
         );
         _transfer(address(this), msg.sender, amount);
