@@ -4,11 +4,11 @@ import { exec } from "child_process";
 const el = "0x2781246fe707bb15cee3e5ea354e2154a2877b16";
 // Deployscript Result
 const txResult = `
-ePriceOracleEL:0x4335AFb7CE6C815eBaAb4f9A3F3fBd51b686480e
-ePriceOracleEth:0x6E8DfFA9dcc2c41D6fa2888eb0E479F9e4F4846E
-controller:0x99fB964b68F08846D11537005d9Ab272D740A19a
-assetTokenEL:0x4ADDFEE8F0F6af9d1d67D6328801bee3D70722eB
-assetTokenEth:0x7a747c0b66FBc2597C71fD0cEd772BD0d8Cc130b
+ePriceOracleEL:0x9b234029d72B3B5061F1b743CDE1471A88056D88
+ePriceOracleEth:0xC2d1cEC44E1689c7655F103A4795941496002566
+controller:0xE2BF90b946C4cBBCF6Db65023C4567D2471A970B
+assetTokenEL:0x6D9d6908767f08B54f557071AAE628d1f836Ace4
+assetTokenEth:0xdf18B7561b9e82379120878BFFd6545D0b0FdC10
 `;
 
 const [
@@ -19,6 +19,7 @@ const [
   assetTokenEth
 ] = txResult.split('\n').filter((body) => body).map((result) => result.split(':')[1]);
 
+/*
 // Verify Controller
 exec(`yarn hardhat verify --network ${hardhat.network.name} ${controller}`, (error, stdout, stderr) => {
   if (error) {
@@ -57,6 +58,7 @@ exec(`yarn hardhat verify --network ${hardhat.network.name} --constructor-args s
   }
   console.log(`stdout: ${stdout}`);
 });
+*/
 
 // Verify AssetTokenEl
 exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network ${hardhat.network.name} --constructor-args scripts/verifyArguments/AssetTokenELVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
