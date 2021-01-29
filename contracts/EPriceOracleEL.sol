@@ -6,8 +6,8 @@ import "./IEPriceOracle.sol";
 import "./Library.sol";
 
 /**
- * @title Elysia's Access Control
- * @notice Control admin and whitelisted account
+ * @title Elysia's price feed
+ * @notice Elysia server set EL Price regularlry
  * @author Elysia
  */
 contract EPriceOracleEL is IEPriceOracle {
@@ -21,11 +21,6 @@ contract EPriceOracleEL is IEPriceOracle {
 
     address public admin;
 
-    /**
-     * Network: Kovan
-     * Aggregator: ETH/USD
-     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
-     */
     constructor() {
         admin = msg.sender;
     }

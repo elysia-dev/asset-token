@@ -18,7 +18,7 @@ interface IEController {
 }
 
 /**
- * @title Elysia's Access Control
+ * @title Elysia's Asset Control layer
  * @notice Control admin and whitelisted account
  * @author Elysia
  */
@@ -55,6 +55,11 @@ contract EController is IEController, AccessControl {
 
     /*** Admin Functions on Setup ***/
 
+    /**
+     * @notice Set EPriceoracle in each payment
+     * @param ePriceOracle_ The address of the ePriceOracle to be enabled
+     * @param payment The payment of price feed
+     */
     function setEPriceOracle(IEPriceOracle ePriceOracle_, uint256 payment)
         external
         onlyAdmin
@@ -63,6 +68,10 @@ contract EController is IEController, AccessControl {
         emit NewPriceOracle(address(ePriceOracle_));
     }
 
+    /**
+     * @notice Add assets to be included in eController
+     * @param assetTokens The list of addresses of the assetTokens to be enabled
+     */
     function setAssetTokens(IAssetTokenBase[] memory assetTokens)
         external
         onlyAdmin
@@ -76,26 +85,19 @@ contract EController is IEController, AccessControl {
         }
     }
 
-    function pauseAssetTokens(IAssetTokenBase[] memory assetTokens)
-        public
-        onlyAdmin
+    /*** Functions on Whitelist ***/
+
+    /**
+     * @notice Whitelisted user can change whitelisted address
+     * @param account The address of account to change
+     */
+    function changeWhitelistedAccount(address account)
+        external
+        override
+        onlyWhitelisted()
     {
-        uint256 len = assetTokens.length;
-
-        for (uint256 i = 0; i < len; i++) {
-            assetTokens[i].pause();
-        }
-    }
-
-    function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens)
-        public
-        onlyAdmin
-    {
-        uint256 len = assetTokens.length;
-
-        for (uint256 i = 0; i < len; i++) {
-            assetTokens[i].unpause();
-        }
+        _setupRole(WHITELISTED, account);
+        renounceRole(WHITELISTED, msg.sender);
     }
 
     /*** Admin Functions on Whitelist ***/
@@ -148,13 +150,26 @@ contract EController is IEController, AccessControl {
         }
     }
 
-    function changeWhitelistedAccount(address account)
-        external
-        override
-        onlyWhitelisted()
+    function pauseAssetTokens(IAssetTokenBase[] memory assetTokens)
+        public
+        onlyAdmin
     {
-        _setupRole(WHITELISTED, account);
-        renounceRole(WHITELISTED, msg.sender);
+        uint256 len = assetTokens.length;
+
+        for (uint256 i = 0; i < len; i++) {
+            assetTokens[i].pause();
+        }
+    }
+
+    function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens)
+        public
+        onlyAdmin
+    {
+        uint256 len = assetTokens.length;
+
+        for (uint256 i = 0; i < len; i++) {
+            assetTokens[i].unpause();
+        }
     }
 
     /*** Access Controllers ***/

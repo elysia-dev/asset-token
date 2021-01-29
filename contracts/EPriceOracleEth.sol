@@ -8,8 +8,8 @@ import "./IEPriceOracle.sol";
 import "./Library.sol";
 
 /**
- * @title Elysia's Access Control
- * @notice Control admin and whitelisted account
+ * @title Elysia's price feed
+ * @notice implements chainlink price aggregator
  * @author Elysia
  */
 contract EPriceOracleEth is IEPriceOracle {
@@ -20,11 +20,6 @@ contract EPriceOracleEth is IEPriceOracle {
 
     AggregatorV3Interface internal _priceFeed;
 
-    /**
-     * Network: Kovan
-     * Aggregator: ETH/USD
-     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331
-     */
     constructor(address priceFeed_) {
         _priceFeed = AggregatorV3Interface(priceFeed_);
         admin = msg.sender;

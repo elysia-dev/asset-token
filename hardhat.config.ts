@@ -24,6 +24,11 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {},
+    mainnet: {
+      url: `https://infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: { mnemonic: process.env.ADMIN },
+      chainId: 1,
+    },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: { mnemonic: process.env.MNEMONIC },

@@ -44,13 +44,13 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {}
 
     /**
-     * @dev purchase asset token with el.
+     * @dev purchase asset token with eth.
      *
-     * This can be used to purchase asset token with Elysia Token (EL).
+     * This can be used to purchase asset token with ether.
      *
      * Requirements:
      * - `amount` this contract should have more asset token than the amount.
-     * - `amount` msg.sender should have more el than elAmount converted from the amount.
+     * - `amount` msg.sender should have more eth than eth converted from the amount.
      */
     function purchase(uint256 amount)
         external
@@ -74,13 +74,13 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     }
 
     /**
-     * @dev retund asset token.
+     * @dev refund asset token.
      *
-     * This can be used to refund asset token with Elysia Token (EL).
+     * This can be used to refund asset token with ether (Eth).
      *
      * Requirements:
      * - `amount` msg.sender should have more asset token than the amount.
-     * - `amount` this contract should have more el than elAmount converted from the amount.
+     * - `amount` this contract should have more eth than ether converted from the amount.
      */
     function refund(uint256 amount)
         external
@@ -106,12 +106,12 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     /**
      * @dev Claim account reward.
      *
-     * This can be used to claim account accumulated rewrard with Elysia Token (EL).
+     * This can be used to claim account accumulated rewrard with ether (Eth).
      *
      * Emits a {RewardClaimed} event.
      *
      * Requirements:
-     * - `elPrice` cannot be the zero.
+     * - `getPrice` cannot be the zero.
      */
     function claimReward()
         external
@@ -136,11 +136,10 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     }
 
     /**
-     * @dev Withdraw all El from this contract to admin
+     * @dev Withdraw all eth from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
         require(payable(msg.sender).send(address(this).balance), "Admin withdraw failed");
-        //payable(msg.sender).send(address(this).balance);
     }
 
     /**
@@ -150,7 +149,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      *
      * Requirements:
      * - `amount` buyer should have more asset token than the amount.
-     * - `amount` seller should have more el than elAmount converted from the amount.
      */
     function _checkBalance(
         address seller,

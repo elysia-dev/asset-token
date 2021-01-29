@@ -54,7 +54,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
      * This can be used to purchase asset token with Elysia Token (EL).
      *
      * Requirements:
-     * - `amount` this contract should have more asset token than the amount.
+     * - `amount` this contract should have more asset tokens than the amount.
      * - `amount` msg.sender should have more el than elAmount converted from the amount.
      */
     function purchase(uint256 amount)
@@ -82,7 +82,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
     }
 
     /**
-     * @dev retund asset token.
+     * @dev refund asset token.
      *
      * This can be used to refund asset token with Elysia Token (EL).
      *

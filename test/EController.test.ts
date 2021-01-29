@@ -13,7 +13,7 @@ describe("Controller", () => {
     let eController: EController;
 
     const provider = waffle.provider;
-    const [admin, account1, account2, account3, account4, account5] = provider.getWallets()
+    const [admin, account1, account2] = provider.getWallets()
 
     beforeEach(async () => {
         eController = await deployContract(
