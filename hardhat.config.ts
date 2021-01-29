@@ -26,12 +26,12 @@ const config: HardhatUserConfig = {
     hardhat: {},
     mainnet: {
       url: `https://infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: { mnemonic: process.env.ADMIN },
+      accounts: [process.env.ADMIN || ''],
       chainId: 1,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: { mnemonic: process.env.MNEMONIC },
+      accounts: [process.env.ADMIN || ''],
       chainId: 3,
     },
     kovan: {
