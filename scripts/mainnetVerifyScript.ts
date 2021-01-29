@@ -19,7 +19,6 @@ const [
   assetTokenEth
 ] = txResult.split('\n').filter((body) => body).map((result) => result.split(':')[1]);
 
-/*
 // Verify Controller
 exec(`yarn hardhat verify --network ${hardhat.network.name} ${controller}`, (error, stdout, stderr) => {
   if (error) {
@@ -58,7 +57,6 @@ exec(`yarn hardhat verify --network ${hardhat.network.name} --constructor-args s
   }
   console.log(`stdout: ${stdout}`);
 });
-*/
 
 // Verify AssetTokenEl
 exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network ${hardhat.network.name} --constructor-args scripts/verifyArguments/AssetTokenELVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
