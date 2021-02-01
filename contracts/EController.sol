@@ -17,9 +17,6 @@ interface IEController {
  * @author Elysia
  */
 contract EController is IEController, AccessControl {
-    // 0: el, 1: eth, 2: wBTC ...
-    mapping(address => uint256) assetPayment;
-
     // AssetToken list
     IAssetTokenBase[] public assetTokenList;
 
@@ -71,7 +68,6 @@ contract EController is IEController, AccessControl {
 
         for (uint256 i = 0; i < len; i++) {
             assetTokenList.push(assetTokens[i]);
-            assetPayment[address(assetTokens[i])] = assetTokens[i].getPayment();
             emit NewAssetToken(address(assetTokens[i]));
         }
     }
