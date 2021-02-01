@@ -147,29 +147,22 @@ describe("AssetTokenEl", () => {
                 elTotalSupply
             );
             firstBlock = (await (await assetTokenEL.connect(account1).purchase(20)).wait()).blockNumber;
-            await eController.connect(admin).addAddressToWhitelist(account1.address);
             await el.connect(account1).transfer(account2.address, await el.balanceOf(account1.address));
             secondBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
             thirdBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
         })
 
-        it('whitelisted account can claim reward.', async () => {
+        it('account can claim reward.', async () => {
             const expectedReward = rewardPerBlock_
-            .mul(
-                expandToDecimals((
-                    (20 * (secondBlock - firstBlock)) +
-                    (10 * (thirdBlock - secondBlock))
+                .mul(
+                    expandToDecimals((
+                        (20 * (secondBlock - firstBlock)) +
+                        (10 * (thirdBlock - secondBlock))
                     ), 18))
-            .div(amount_)
-            .div(expandToDecimals(4, 16))
+                .div(amount_)
+                .div(expandToDecimals(4, 16))
             await assetTokenEL.connect(account1).claimReward()
             expect(await el.balanceOf(account1.address)).to.be.equal(expectedReward);
-        })
-
-        it('Not whitelisted account cannot claim reward.', async () => {
-            expect(await assetTokenEL.getReward(account2.address)).not.to.be.equal(0);
-            await expect(assetTokenEL.connect(account2).claimReward())
-                .to.be.revertedWith('Restricted to whitelisted.')
         })
     })
 
@@ -209,7 +202,6 @@ describe("AssetTokenEl", () => {
                 assetTokenEL.address,
                 elTotalSupply
             )
-            await eController.connect(admin).addAddressToWhitelist(account1.address);
             await assetTokenEL.connect(admin).pause();
             await expect(assetTokenEL.connect(account1).purchase(20))
                 .to.be.revertedWith('Pausable: paused')

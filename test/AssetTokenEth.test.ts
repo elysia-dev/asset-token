@@ -116,12 +116,11 @@ describe("AssetTokenEth", () => {
 
         beforeEach(async () => {
             firstBlock = (await (await assetTokenEth.connect(account1).purchase(20, options)).wait()).blockNumber;
-            await eController.connect(admin).addAddressToWhitelist(account1.address);
             secondBlock = (await (await assetTokenEth.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
             thirdBlock = (await (await assetTokenEth.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
         })
 
-        it('whitelisted account can claim reward.', async () => {
+        it('account can claim reward.', async () => {
             const expectedReward = rewardPerBlock_
                 .mul(
                     expandToDecimals((
@@ -132,12 +131,6 @@ describe("AssetTokenEth", () => {
                 .div(expandToDecimals(1000, 18))
             expect(await assetTokenEth.connect(account1).claimReward())
                 .to.changeEtherBalance(account1, expectedReward)
-        })
-
-        it('Not whitelisted account cannot claim reward.', async () => {
-            expect(await assetTokenEth.getReward(account2.address)).not.to.be.equal(0);
-            await expect(assetTokenEth.connect(account2).claimReward())
-                .to.be.revertedWith('Restricted')
         })
     })
 
@@ -166,7 +159,6 @@ describe("AssetTokenEth", () => {
         })
 
         it('cannot execute purchase, refund and claimReward when paused', async () => {
-            await eController.connect(admin).addAddressToWhitelist(account1.address);
             await assetTokenEth.connect(admin).pause();
             await expect(assetTokenEth.purchase(20))
                 .to.be.revertedWith('Pausable: paused')

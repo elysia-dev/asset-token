@@ -163,15 +163,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         return true;
     }
 
-    /// @dev Restricted to members of the whitelisted user.
-    modifier onlyWhitelisted(address account) {
-        require(
-            eController.isWhitelisted(account),
-            "Restricted to whitelisted."
-        );
-        _;
-    }
-
     /// @dev Restricted to members of the admin role.
     modifier onlyAdmin(address account) {
         require(eController.isAdmin(account), "Restricted to admin.");

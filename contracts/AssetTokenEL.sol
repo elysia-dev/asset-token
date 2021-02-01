@@ -124,7 +124,6 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         external
         override
         whenNotPaused
-        onlyWhitelisted(msg.sender)
     {
         uint256 reward =
             getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));

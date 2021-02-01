@@ -7,7 +7,6 @@ import { expandToDecimals, makeAssetTokenBase } from "./Utils/AssetToken";
 import { deployContract } from "ethereum-waffle";
 import EPriceOracleTestArtifact from "../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
-import { keccak256, solidityKeccak256, toUtf8Bytes } from "ethers/lib/utils";
 
 describe("Controller", () => {
     let eController: EController;
@@ -50,10 +49,10 @@ describe("Controller", () => {
 
         beforeEach(async () => {
             assetTokenBase = await makeAssetTokenBase
-            ({
-                from: admin,
-                eController_: eController.address
-            })
+                ({
+                    from: admin,
+                    eController_: eController.address
+                })
         })
 
         it("Admin can set asset token", async () => {
@@ -98,16 +97,16 @@ describe("Controller", () => {
                 EPriceOracleTestArtifact
             ) as EPriceOracleTest
             assetTokenBase0 = await makeAssetTokenBase
-            ({
-                from: admin,
-                eController_: eController.address
-            })
+                ({
+                    from: admin,
+                    eController_: eController.address
+                })
             assetTokenBase1 = await makeAssetTokenBase
-            ({
-                from: admin,
-                eController_: eController.address,
-                payment_: 1
-            })
+                ({
+                    from: admin,
+                    eController_: eController.address,
+                    payment_: 1
+                })
             await ePriceOracleTest0.connect(admin).setPrice(expandToDecimals(5, 15))
             await ePriceOracleTest1.connect(admin).setPrice(expandToDecimals(1, 21))
             await eController.connect(admin).setAssetTokens(
@@ -124,56 +123,6 @@ describe("Controller", () => {
                 .to.equal(await ePriceOracleTest0.getPrice())
             expect(await eController.connect(assetTokenBase1.address).getPrice(await assetTokenBase1.getPayment()))
                 .to.equal(await ePriceOracleTest1.getPrice())
-        })
-    })
-
-    context('.whitelist', async () => {
-        const WHITELISTED = keccak256(toUtf8Bytes("WHITELISTED"))
-
-        it("Admin can add whitelist", async () => {
-            await expect(eController.connect(admin).addAddressToWhitelist(account1.address))
-                .to.emit(eController, "RoleGranted")
-                .withArgs(WHITELISTED, account1.address, admin.address)
-            expect(await eController.hasRole(WHITELISTED, account1.address))
-                .to.be.true
-        });
-
-        it("Admin can add multi addresses to whitelist", async () => {
-            await expect(eController.connect(admin).addAddressesToWhitelist([account1.address, account2.address]))
-                .to.emit(eController, "RoleGranted")
-            expect(await eController.getRoleMember(WHITELISTED, 0))
-                .to.be.equal(account1.address)
-            expect(await eController.getRoleMember(WHITELISTED, 1))
-                .to.be.equal(account2.address)
-            expect(await eController.getRoleMemberCount(WHITELISTED))
-                .to.be.equal(2)
-        });
-
-        it("General account cannot add whitelist", async () => {
-            await expect(eController.connect(account1).addAddressToWhitelist(account1.address))
-                .to.be.revertedWith("Restricted to admin.")
-        });
-
-        it("Admin can remove whitelist", async () => {
-            await eController.connect(admin).addAddressToWhitelist(account1.address)
-            await expect(eController.connect(admin).removeAddressFromWhitelist(account1.address))
-                .to.emit(eController, "RoleRevoked")
-                .withArgs(WHITELISTED, account1.address, admin.address)
-            expect(await eController.hasRole(WHITELISTED, account1.address))
-                .to.be.false
-        });
-
-        it("whitelisted user can change whitelisted account", async () => {
-            await eController.connect(admin).addAddressToWhitelist(account1.address)
-            await expect(eController.connect(account1).changeWhitelistedAccount(account2.address))
-                .to.emit(eController, "RoleGranted")
-                .withArgs(WHITELISTED, account2.address, account1.address)
-                .to.emit(eController, "RoleRevoked")
-                .withArgs(WHITELISTED, account1.address, account1.address)
-            expect(await eController.hasRole(WHITELISTED, account1.address))
-                .to.be.false
-            expect(await eController.hasRole(WHITELISTED, account2.address))
-                .to.be.true
         })
     })
 });

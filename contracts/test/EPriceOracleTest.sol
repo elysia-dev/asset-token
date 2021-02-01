@@ -7,7 +7,7 @@ import "../Library.sol";
 
 /**
  * @title Elysia's Access Control
- * @notice Control admin and whitelisted account
+ * @notice Control admin account
  * @author Elysia
  */
 contract EPriceOracleTest is IEPriceOracle {
