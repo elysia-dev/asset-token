@@ -4,7 +4,7 @@ import { EController } from "../typechain/EController";
 import { AssetTokenEL } from "../typechain/AssetTokenEL"
 import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
 import { TestnetEL } from "../typechain/TestnetEL"
-import { expandToDecimals } from "./Utils/AssetToken";
+import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import AssetTokenELArtifact from "../artifacts/contracts/AssetTokenEl.sol/AssetTokenEL.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"

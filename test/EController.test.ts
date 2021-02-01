@@ -3,7 +3,8 @@ import { waffle } from "hardhat";
 import { EController } from "../typechain/EController";
 import { AssetTokenBase } from "../typechain/AssetTokenBase"
 import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
-import { expandToDecimals, makeAssetTokenBase } from "./Utils/AssetToken";
+import makeAssetTokenBase from "./utils/makeAssetTokenBase";
+import expandToDecimals from "./utils/expandToDecimals"
 import { deployContract } from "ethereum-waffle";
 import EPriceOracleTestArtifact from "../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"

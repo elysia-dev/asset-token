@@ -1,14 +1,10 @@
-
-import { Address } from "cluster"
 import { AssetTokenBase } from "../../typechain/AssetTokenBase"
-import { EController } from "../../typechain/EController"
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import EControllerArtifact from "../../artifacts/contracts/EController.sol/EController.json"
 import AssetTokenBaseArtifact from "../../artifacts/contracts/AssetTokenBase.sol/AssetTokenBase.json"
 import { BigNumber, Wallet } from "ethers";
 import { deployContract } from "ethereum-waffle";
+import expandToDecimals from "./expandToDecimals";
 
-export async function makeAssetTokenBase({
+async function makeAssetTokenBase({
     from,
     eController_ = "", //아직 eController가 없어요
     amount_ = 10000,
@@ -62,6 +58,4 @@ export async function makeAssetTokenBase({
     return assetTokenBase;
 }
 
-export function expandToDecimals(n: number, m: number): BigNumber {
-    return BigNumber.from(n).mul(BigNumber.from(10).pow(m))
-  }
+export default makeAssetTokenBase

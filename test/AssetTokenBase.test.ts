@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { waffle } from "hardhat";
 import { EController } from "../typechain/EController";
 import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
-import { expandToDecimals } from "./Utils/AssetToken";
+import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import AssetTokenBaseTestArtifact from "../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
