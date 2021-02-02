@@ -72,6 +72,14 @@ contract EController is IEController, AccessControl {
         }
     }
 
+    function setAdmin(address account)
+        external
+        onlyAdmin
+    {
+        _setupRole(DEFAULT_ADMIN_ROLE, account);
+        renounceRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
     function pauseAssetTokens(IAssetTokenBase[] memory assetTokens)
         public
         onlyAdmin

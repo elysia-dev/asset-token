@@ -15,6 +15,9 @@ contract EPriceOracleEL is IEPriceOracle {
     /// @notice Emitted when el Price is changed
     event NewElPrice(uint256 newElPrice);
 
+    /// @notice Emitted when el Price is changed
+    event NewAdmin(address newAdmin);
+
     // USD per Elysia token
     // decimals: 18
     uint256 private _elPrice;
@@ -36,5 +39,13 @@ contract EPriceOracleEL is IEPriceOracle {
         emit NewElPrice(elPrice_);
 
         return true;
+    }
+
+    function setAdmin(address account) external {
+        require(msg.sender == admin, "Restricted to admin.");
+
+        admin = account;
+
+        emit NewAdmin(account);
     }
 }

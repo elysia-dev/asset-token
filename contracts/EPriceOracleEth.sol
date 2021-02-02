@@ -18,6 +18,9 @@ contract EPriceOracleEth is IEPriceOracle {
 
     address public admin;
 
+/// @notice Emitted when admin is changed
+    event NewAdmin(address newAdmin);
+
     AggregatorV3Interface internal _priceFeed;
 
     constructor(address priceFeed_) {
@@ -39,5 +42,13 @@ contract EPriceOracleEth is IEPriceOracle {
         ) = _priceFeed.latestRoundData();
 
         return price.toUint256().mul(1e10);
+    }
+
+    function setAdmin(address account) external {
+        require(msg.sender == admin, "Restricted to admin.");
+
+        admin = account;
+
+        emit NewAdmin(account);
     }
 }

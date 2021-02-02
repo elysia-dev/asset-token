@@ -73,6 +73,26 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
 
     /*** View functions ***/
 
+    function getLatitude() external view override returns (uint256) {
+        return latitude;
+    }
+
+    function getLongitude() external view override returns (uint256) {
+        return longitude;
+    }
+
+    function getAssetPrice() external view override returns (uint256) {
+        return assetPrice;
+    }
+
+    function getInterestRate() external view override returns (uint256) {
+        return interestRate;
+    }
+
+    function getPrice() external view override returns (uint256) {
+        return price;
+    }
+
     function getPayment() external view override returns (uint256) {
         return payment;
     }
