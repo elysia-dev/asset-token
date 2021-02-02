@@ -14,7 +14,14 @@ struct RewardLocalVars {
     uint256 totalSupply;
 }
 
-struct ExchangeLocalVars {
+struct SpentLocalVars {
+    uint amount;
+    uint256 currencyPrice;
+    uint256 assetTokenPrice;
+}
+
+struct AmountLocalVars {
+    uint256 spent;
     uint256 currencyPrice;
     uint256 assetTokenPrice;
 }
@@ -41,11 +48,19 @@ library AssetTokenLibrary {
         return self.accountReward.add(self.newReward);
     }
 
-    function mulPrice(ExchangeLocalVars memory self)
+    function getSpent(SpentLocalVars memory self)
         internal
         pure
         returns (uint)
     {
-        return self.assetTokenPrice.mul(1e18).div(self.currencyPrice);
+        return self.amount.mul(self.assetTokenPrice).div(self.currencyPrice);
+    }
+
+    function getAmount(AmountLocalVars memory self)
+        internal
+        pure
+        returns (uint)
+    {
+        return self.spent.mul(self.currencyPrice).div(self.assetTokenPrice);
     }
 }

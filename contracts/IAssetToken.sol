@@ -15,13 +15,13 @@ interface IAssetTokenBase {
 }
 
 interface IAssetTokenERC20 {
-    function purchase(uint256 amount) external;
+    function purchase(uint256 spent) external;
     function refund(uint256 amount) external;
     function claimReward() external;
 }
 
 interface IAssetTokenEth {
-    function purchase(uint256 amount) external payable;
+    function purchase() external payable;
     function refund(uint256 amount) external;
     function claimReward() external;
 }

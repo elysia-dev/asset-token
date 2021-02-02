@@ -17,7 +17,7 @@ describe("AssetTokenEl", () => {
     let el: TestnetEL;
     let ePriceOracleEL: EPriceOracleTest
 
-    const amount_ = 10000
+    const amount_ = expandToDecimals(10000, 18)
     const price_ = expandToDecimals(5, 18)
     const rewardPerBlock_ = expandToDecimals(5, 14)
     const payment_ = 0
@@ -30,6 +30,7 @@ describe("AssetTokenEl", () => {
     const decimals_ = 0
 
     const elTotalSupply = expandToDecimals(7, 28)
+    const elPrice = expandToDecimals(4, 16)
 
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
@@ -77,7 +78,7 @@ describe("AssetTokenEl", () => {
         await eController.connect(admin)
             .setAssetTokens([assetTokenEL.address])
         await ePriceOracleEL.connect(admin)
-            .setPrice(expandToDecimals(4, 16))
+            .setPrice(elPrice)
     })
 
     context(".purchase", async () => {
@@ -87,18 +88,28 @@ describe("AssetTokenEl", () => {
                 assetTokenEL.address,
                 elTotalSupply
             )
-            await assetTokenEL.connect(account1).purchase(20)
+
+            await assetTokenEL.connect(account1).purchase(
+                expandToDecimals(20, 18).mul(price_).div(elPrice)
+            )
             expect(await assetTokenEL.balanceOf(account1.address))
-                .to.be.equal(20);
+                .to.be.equal(expandToDecimals(20, 18));
             expect(await assetTokenEL.balanceOf(assetTokenEL.address))
-                .to.be.equal(amount_ - 20);
+                .to.be.equal(amount_.sub(expandToDecimals(20, 18)));
             expect(await el.balanceOf(assetTokenEL.address)).to.be.equal(
-                price_.mul(20).mul(expandToDecimals(1, 18)).div((await eController.getPrice(payment_)))
+                price_.mul(20).mul(expandToDecimals(1, 18)).div(elPrice)
+            );
+            expect(await el.balanceOf(account1.address)).to.be.equal(
+                expandToDecimals(10000, 18).sub(
+                    price_.mul(20).mul(expandToDecimals(1, 18)).div(elPrice)
+                )
             );
         })
 
         it('if account does not have sufficient allowed el balance, transfer is failed', async () => {
-            await expect(assetTokenEL.connect(account1).purchase(10))
+            await expect(assetTokenEL.connect(account1).purchase(
+                expandToDecimals(20, 18).mul(price_).div(elPrice)
+            ))
                 .to.be.revertedWith('AssetToken: Insufficient buyer el balance.')
         })
     })
@@ -114,22 +125,36 @@ describe("AssetTokenEl", () => {
                 assetTokenEL.address,
                 elTotalSupply
             )
-            await assetTokenEL.connect(account1).purchase(20)
-            await assetTokenEL.connect(account1).refund(10)
-            expect(await assetTokenEL.balanceOf(account1.address)).to.be.equal(10);
+            await assetTokenEL.connect(account1).purchase(
+                expandToDecimals(20, 18).mul(price_).div(elPrice)
+            )
+
+            // Half refund
+            await assetTokenEL.connect(account1).refund(expandToDecimals(10, 18))
+            expect(await assetTokenEL.balanceOf(account1.address)).to.be.equal(expandToDecimals(10, 18));
             expect(
                 await assetTokenEL.balanceOf(assetTokenEL.address)
-            ).to.be.equal(amount_ - 10);
+            ).to.be.equal(amount_.sub(expandToDecimals(10, 18)));
+            expect(await el.balanceOf(account1.address)).to.be.equal(
+                expandToDecimals(10000, 18).sub(
+                    price_.mul(10).mul(expandToDecimals(1, 18)).div(elPrice)
+                )
+            );
+
+            // Full refund
+            await assetTokenEL.connect(account1).refund(expandToDecimals(10, 18))
+            expect(await assetTokenEL.balanceOf(account1.address)).to.be.equal(0);
+            expect(await el.balanceOf(account1.address)).to.be.equal(expandToDecimals(10000, 18));
         })
 
         it('if account does not have sufficient allowed balance, transfer is failed', async () => {
-            await expect(assetTokenEL.connect(account1).refund(10))
+            await expect(assetTokenEL.connect(account1).refund(expandToDecimals(10, 18)))
                 .to.be.revertedWith('AssetToken: Insufficient seller balance.')
         })
 
         it('if account does not have sufficient balance, transfer is failed', async () => {
             await assetTokenEL.connect(account1).approve(assetTokenEL.address, amount_)
-            await expect(assetTokenEL.connect(account1).refund(10))
+            await expect(assetTokenEL.connect(account1).refund(expandToDecimals(10, 18)))
                 .to.be.revertedWith('AssetToken: Insufficient seller balance.')
         })
     })
@@ -146,21 +171,24 @@ describe("AssetTokenEl", () => {
                 assetTokenEL.address,
                 elTotalSupply
             );
-            firstBlock = (await (await assetTokenEL.connect(account1).purchase(20)).wait()).blockNumber;
+            firstBlock = (await (await assetTokenEL.connect(account1).purchase(
+                expandToDecimals(20, 18).mul(price_).div(elPrice)
+            )).wait()).blockNumber;
             await el.connect(account1).transfer(account2.address, await el.balanceOf(account1.address));
-            secondBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
-            thirdBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, 10)).wait()).blockNumber;
+            secondBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, expandToDecimals(10, 18))).wait()).blockNumber;
+            thirdBlock = (await (await assetTokenEL.connect(account1).transfer(account2.address, expandToDecimals(10, 18))).wait()).blockNumber;
         })
 
         it('account can claim reward.', async () => {
             const expectedReward = rewardPerBlock_
                 .mul(
-                    expandToDecimals((
-                        (20 * (secondBlock - firstBlock)) +
-                        (10 * (thirdBlock - secondBlock))
-                    ), 18))
+                    expandToDecimals(
+                        20 * (secondBlock - firstBlock) + 10 * (thirdBlock - secondBlock),
+                        18
+                    )
+                ).mul(expandToDecimals(1, 18))
                 .div(amount_)
-                .div(expandToDecimals(4, 16))
+                .div(elPrice)
             await assetTokenEL.connect(account1).claimReward()
             expect(await el.balanceOf(account1.address)).to.be.equal(expectedReward);
         })
@@ -203,9 +231,11 @@ describe("AssetTokenEl", () => {
                 elTotalSupply
             )
             await assetTokenEL.connect(admin).pause();
-            await expect(assetTokenEL.connect(account1).purchase(20))
-                .to.be.revertedWith('Pausable: paused')
-            await expect(assetTokenEL.connect(account1).refund(20))
+
+            await expect(assetTokenEL.connect(account1).purchase(
+                expandToDecimals(20, 18).mul(price_).div(elPrice)
+            )).to.be.revertedWith('Pausable: paused')
+            await expect(assetTokenEL.connect(account1).refund(expandToDecimals(10, 18)))
                 .to.be.revertedWith('Pausable: paused')
             await expect(assetTokenEL.connect(account1).claimReward())
                 .to.be.revertedWith('Pausable: paused')

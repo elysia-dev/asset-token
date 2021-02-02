@@ -8,7 +8,8 @@ import "./AssetTokenBase.sol";
 
 contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
     using SafeMath for uint256;
-    using AssetTokenLibrary for ExchangeLocalVars;
+    using AssetTokenLibrary for SpentLocalVars;
+    using AssetTokenLibrary for AmountLocalVars;
 
     IERC20 private _el;
 
@@ -54,27 +55,30 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
      * This can be used to purchase asset token with Elysia Token (EL).
      *
      * Requirements:
-     * - `amount` this contract should have more asset tokens than the amount.
-     * - `amount` msg.sender should have more el than elAmount converted from the amount.
+     * - `spent` msg.sender should have more spent.
+     * - `spent` this contract should have more asset tokens amount calculated with spent.
      */
-    function purchase(uint256 amount)
+    function purchase(uint256 spent)
         external
         override
         whenNotPaused
     {
-        _checkBalance(msg.sender, address(this), amount);
-
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
+        AmountLocalVars memory vars =
+            AmountLocalVars({
+                spent: spent,
                 currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
+
+        uint256 amount = vars.getAmount();
+
+        _checkBalance(msg.sender, spent, address(this), amount);
 
         require(
             _el.transferFrom(
                 msg.sender,
                 address(this),
-                amount.mul(vars.mulPrice())
+                spent
             ),
             "EL : transferFrom failed"
         );
@@ -95,16 +99,19 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        _checkBalance(address(this), msg.sender, amount);
-
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
+        SpentLocalVars memory vars =
+            SpentLocalVars({
+                amount: amount,
                 currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
 
+        uint256 spent = vars.getSpent();
+
+        _checkBalance(address(this), spent, msg.sender, amount);
+
         require(
-            _el.transfer(msg.sender, amount.mul(vars.mulPrice())),
+            _el.transfer(msg.sender, spent),
             "EL : transfer failed"
         );
         _transfer(msg.sender, address(this), amount);
@@ -116,9 +123,6 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
      * This can be used to claim account accumulated rewrard with Elysia Token (EL).
      *
      * Emits a {RewardClaimed} event.
-     *
-     * Requirements:
-     * - `elPrice` cannot be the zero.
      */
     function claimReward()
         external
@@ -129,7 +133,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
             getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
 
         require(
-            reward < _el.balanceOf(address(this)),
+            reward <= _el.balanceOf(address(this)),
             "AssetToken: Insufficient seller balance."
         );
         _el.transfer(msg.sender, reward);
@@ -144,25 +148,27 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
      * This can be used to check balance of buyer and seller before swap.
      *
      * Requirements:
-     * - `amount` buyer should have more asset token than the amount.
-     * - `amount` seller should have more el than elAmount converted from the amount.
+     * - `spent` should be positive.
+     * - `spent` buyer should have spent token value than the spent.
+     * - `amount` should be positive.
+     * - `amount` seller should have more asset token balance than amount.
      */
     function _checkBalance(
         address buyer,
+        uint256 spent,
         address seller,
         uint256 amount
     ) internal view {
-
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
-                currencyPrice: eController.getPrice(payment),
-                assetTokenPrice: price
-            });
+        require(
+            spent > 0 && amount > 0,
+            "AssetToken: Wrong spent or amount."
+        );
 
         require(
-            _el.balanceOf(buyer) >= amount.mul(vars.mulPrice()),
+            _el.balanceOf(buyer) >= spent,
             "AssetToken: Insufficient buyer el balance."
         );
+
         require(
             balanceOf(seller) >= amount,
             "AssetToken: Insufficient seller balance."

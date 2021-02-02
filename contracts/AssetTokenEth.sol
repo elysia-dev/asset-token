@@ -8,7 +8,8 @@ import "./AssetTokenBase.sol";
 
 contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     using SafeMath for uint256;
-    using AssetTokenLibrary for ExchangeLocalVars;
+    using AssetTokenLibrary for SpentLocalVars;
+    using AssetTokenLibrary for AmountLocalVars;
 
     /// @notice Emitted when an user claimed reward
     event RewardClaimed(address account, uint256 reward);
@@ -49,32 +50,29 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * This can be used to purchase asset token with ether.
      *
      * Requirements:
-     * - `amount` this contract should have more asset token than the amount.
-     * - `amount` msg.sender should have more eth than eth converted from the amount.
+     * - `msg.value` msg.sender should have more eth than msg.value.
      */
-    function purchase(uint256 amount)
+    function purchase()
         external
         payable
         override
         whenNotPaused
     {
-        _checkBalance(address(this), amount);
+        require(
+            msg.value > 0,
+            "Not enough msg.value"
+        );
 
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
+        AmountLocalVars memory vars =
+            AmountLocalVars({
+                spent: msg.value,
                 currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
 
-        // Allow 1% diff caused by chainlink price feed
-        uint256 totalPrice = amount.mul(vars.mulPrice());
-        uint256 minPrice = totalPrice.div(100).mul(99);
-        uint256 maxPrice = totalPrice.div(100).mul(101);
+        uint256 amount = vars.getAmount();
 
-        require(
-            msg.value >= minPrice && msg.value <= maxPrice,
-            "Not enough msg.value"
-        );
+        _checkBalance(address(this), amount);
         _transfer(address(this), msg.sender, amount);
     }
 
@@ -94,16 +92,19 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {
         _checkBalance(msg.sender, amount);
 
-        ExchangeLocalVars memory vars =
-            ExchangeLocalVars({
+        SpentLocalVars memory vars =
+            SpentLocalVars({
+                amount: amount,
                 currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
 
+        uint256 spent = vars.getSpent();
+
         _transfer(msg.sender, address(this), amount);
 
         require(
-            msg.sender.send(amount.mul(vars.mulPrice())),
+            msg.sender.send(spent),
             "Eth : send failed"
         );
     }
@@ -127,7 +128,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
 
         require(
-            reward < address(this).balance,
+            reward <= address(this).balance,
             "AssetToken: Insufficient seller balance."
         );
 
@@ -164,6 +165,10 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         );
     }
 
+    /**
+     * @dev allow asset token to receive eth from other accounts.
+     * Monthly rent profit (eth) is acummulated in asset token from elysia admin account
+     */
     receive() external payable {
     }
 }
