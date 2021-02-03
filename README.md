@@ -11,23 +11,23 @@ Asset Token is a bundle of contracts for tokenizing real estate.
 
 ### **Asset Token**
 
-Asset token contracts are the primary means of interacting with the Elysia. With this contract, users can purchase, refund, claim reward, transfer asset tokens.
+Asset token contracts are the primary means of interacting with Elysia. With this contract, users can purchase, make refund, claim rewards and transfer asset tokens.
 
-As the asset tokens are ERC-20, asset tokens provide basic functionality like `transfer`, `transferFrom`, `approve`, `allowance`, `balanceOf`, `totalSupply`. Below is descriptions of custom methods that we implement for serving exchange and compensation system
+As the asset tokens are ERC-20, asset tokens provide basic functionality like `transfer`, `transferFrom`, `approve`, `allowance`, `balanceOf`, `totalSupply`. Below are custom methods that we implement for the serving exchange and compensation system
 
 **Reward**
 
-Every user accrues monthly rent for each block they are transferring or purchasing asset tokens. Successful execution of calling `transfer`, `transferFrom`, `purchase`, `refund` functions triggers the `_saveReward` method, which causes monthly reward to be recorded in mapping `_rewards`. This can be done by a hook `_beforeTokenTransfer` that is called before any transfer of asset token.
+Every user accrues monthly rent every block upon purchasing and transferring of the asset tokens to theier Ethereum wallet. This is called before any transfert of asset token takes place. Successful execution of calling `transfer`, `transferFrom`, `purchase`, `refund` functions triggers the `_saveReward` method, which causes monthly reward to be recorded in mapping `_rewards`. This can be done by a hook `_beforeTokenTransfer` that is called before any transfer of asset token.
 
 The asset token contract’s `_rewardPerBlock` is an unsigned integer that indicates the rate at which the contract distributes monthly rent to asset token owners, every Ethereum block. The contract automatically transfers accrued monthly rent to a user’s address when the address executes `claimReward` functions. Users may call the `claimReward` method on the contract at any time for finer-grained control over their monthly rent. The contract compute reward using the library.
 
 **Purchase and Refund**
 
-When users specify how much they make a payment, the asset token contract calculates the corresponding amount they’ll transfer. In order to be sure about the token price, the asset token contract needs an oracle. The oracle gets the recent price for tokens. Asset token contracts require users to first make approval on them for asset token contract to perform purchase or refund functionality.
+When users specify their payment, Asset Token contract require users to first make approval to perform purchase or refund functionality.
 
 **Pause**
 
-In case of asset token contract vulnerability needed to update or fix, calling `pause` can stop purchase, refund, and claim a reward.
+In case asset token contract vulnerability is detected, calling `pause` can stop purchases, refunds, and rewards.
 
 ### **Oracle**
 
