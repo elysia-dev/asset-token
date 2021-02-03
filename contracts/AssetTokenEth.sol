@@ -101,6 +101,11 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
         uint256 spent = vars.getSpent();
 
+        require(
+            address(this).balance >= spent,
+            "AssetToken: Insufficient buyer balance."
+        );
+
         _transfer(msg.sender, address(this), amount);
 
         require(
@@ -129,7 +134,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
         require(
             reward <= address(this).balance,
-            "AssetToken: Insufficient seller balance."
+            "AssetToken: Insufficient contract balance."
         );
 
         _clearReward(msg.sender);

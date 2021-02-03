@@ -105,6 +105,15 @@ describe("AssetTokenEth", () => {
             )
         })
 
+        it('if contract has not sufficient balance, transfer is failed', async () => {
+            await assetTokenEth.connect(account1).purchase(options)
+            await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18))
+            await assetTokenEth.connect(admin).withdrawToAdmin()
+
+            await expect(assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
+                .to.be.revertedWith('AssetToken: Insufficient buyer balance.')
+        })
+
         it('if account does not have sufficient allowed balance, transfer is failed', async () => {
             await expect(assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
                 .to.be.revertedWith('AssetToken: Insufficient seller balance.')
@@ -158,6 +167,13 @@ describe("AssetTokenEth", () => {
             firstBlock = (await (await assetTokenEth.connect(account1).purchase(options)).wait()).blockNumber;
             secondBlock = (await (await assetTokenEth.connect(account1).transfer(account2.address, expandToDecimals(10, 18))).wait()).blockNumber;
             thirdBlock = (await (await assetTokenEth.connect(account1).transfer(account2.address, expandToDecimals(10, 18))).wait()).blockNumber;
+        })
+
+        it('if contract has not sufficient balance, transfer is failed', async () => {
+            await assetTokenEth.connect(admin).withdrawToAdmin()
+
+            await expect(assetTokenEth.connect(account1).claimReward())
+                .to.be.revertedWith('AssetToken: Insufficient contract balance.')
         })
 
         it('account can claim reward.', async () => {
