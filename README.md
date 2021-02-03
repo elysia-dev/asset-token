@@ -47,6 +47,10 @@ Asset token call 'getPrice' which returns the most recent price for a token in U
 
 Solidity libraries focus on safety and execution gas efficiency across Elysia asset tokens.
 
+### UML diagram
+
+![asset-token](https://user-images.githubusercontent.com/69144981/106694424-e3fb9d00-661b-11eb-9a86-d8fa55fb88ad.png)
+
 ## Enviroment Variables
 
 | Variable          | Description                                                                  |
