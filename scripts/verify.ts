@@ -6,9 +6,10 @@ const priceOracleEth = process.env.PRICE_ORACLE_ETH;
 const assetTokenEl = process.env.ASSET_TOKEN_EL;
 const assetTokenEth = process.env.ASSET_TOKEN_ETH;
 const controller = process.env.CONTROLLER;
+const network = process.env.NETWORK;
 
 // Verify EL Token
-exec(`yarn hardhat verify --network kovan --constructor-args scripts/verifyArguments/testnetELVerify.js ${el}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${network} --constructor-args scripts/verifyArguments/testnetELVerify.js ${el}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -21,7 +22,7 @@ exec(`yarn hardhat verify --network kovan --constructor-args scripts/verifyArgum
 });
 
 // Verify Controller
-exec(`yarn hardhat verify --network kovan ${controller}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${network} ${controller}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -34,7 +35,7 @@ exec(`yarn hardhat verify --network kovan ${controller}`, (error, stdout, stderr
 });
 
 // Verify PriceOracleEL
-exec(`yarn hardhat verify --network kovan ${priceOracleEl}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${network} ${priceOracleEl}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -47,7 +48,7 @@ exec(`yarn hardhat verify --network kovan ${priceOracleEl}`, (error, stdout, std
 });
 
 // Verify PriceOracleEth
-exec(`yarn hardhat verify --network kovan --constructor-args scripts/verifyArguments/EPriceOracleEthVerify.js ${priceOracleEth}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${network} --constructor-args scripts/verifyArguments/EPriceOracleEthVerify.js ${priceOracleEth}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -60,7 +61,7 @@ exec(`yarn hardhat verify --network kovan --constructor-args scripts/verifyArgum
 });
 
 // Verify AssetTokenEl
-exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network kovan --constructor-args scripts/verifyArguments/AssetTokenELVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
+exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network ${network} --constructor-args scripts/verifyArguments/AssetTokenELVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -73,7 +74,7 @@ exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network kovan --co
 });
 
 // Verify AssetTokenEth
-exec(`CONTROLLER=${controller} yarn hardhat verify --network kovan --constructor-args scripts/verifyArguments/AssetTokenEthVerify.js ${assetTokenEth}`, (error, stdout, stderr) => {
+exec(`CONTROLLER=${controller} yarn hardhat verify --network ${network} --constructor-args scripts/verifyArguments/AssetTokenEthVerify.js ${assetTokenEth}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;

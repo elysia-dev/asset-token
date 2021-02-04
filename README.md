@@ -77,12 +77,7 @@ yarn hardhat test ./test/**.test.ts
 
 ```jsx
 // for test
-yarn hardhat run --network kovan testDeployScriptKovan
-```
-
-```jsx
-// for mainnet
-yarn hardhat run --network mainnet mainnetDeployScript
+yarn hardhat run --network {mainnet | kovan} deploy.ts
 ```
 
 ## Discussion
