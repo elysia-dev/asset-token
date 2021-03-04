@@ -66,7 +66,6 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         AmountLocalVars memory vars =
             AmountLocalVars({
                 spent: spent,
-                currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
 
@@ -102,7 +101,6 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         SpentLocalVars memory vars =
             SpentLocalVars({
                 amount: amount,
-                currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
 

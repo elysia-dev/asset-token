@@ -66,7 +66,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         AmountLocalVars memory vars =
             AmountLocalVars({
                 spent: msg.value,
-                currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
 
@@ -95,7 +94,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         SpentLocalVars memory vars =
             SpentLocalVars({
                 amount: amount,
-                currencyPrice: eController.getPrice(payment),
                 assetTokenPrice: price
             });
 

@@ -21,18 +21,18 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     uint256 public assetPrice;
     uint256 public interestRate;
 
-    // USD per Elysia Asset Token
+    // price per Elysia Asset Token
     // decimals: 18
     uint256 public price;
 
-    // monthlyRent$/(secondsPerMonth*averageBlockPerSecond)
+    // AnnualInterestRate/(secondsPerYear*averageBlockPerSecond)
     // Decimals: 18
     uint256 public rewardPerBlock;
 
     // 0: el, 1: eth, 2: wBTC ...
     uint256 public payment;
 
-    // Account rewards (USD)
+    // Account rewards
     // Decimals: 18
     mapping(address => uint256) private _rewards;
 
