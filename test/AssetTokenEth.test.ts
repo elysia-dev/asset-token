@@ -15,8 +15,10 @@ describe("AssetTokenEth", () => {
     let ePriceOracleEth: EPriceOracleTest
 
     const amount_ = expandToDecimals(10000, 18)
-    const price_ = expandToDecimals(5, 18)
-    const rewardPerBlock_ = expandToDecimals(5, 14)
+    // 0.005 ether = 1 assetToken
+    const price_ = expandToDecimals(5, 15)
+    // price * interestRate / (secondsPerYear * blockTime)
+    const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = 1
     const latitude_ = 123
     const longitude_ = 456
@@ -24,7 +26,7 @@ describe("AssetTokenEth", () => {
     const interestRate_ = expandToDecimals(1, 17)
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
-    const decimals_ = 0
+    const decimals_ = 18
 
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
@@ -81,7 +83,7 @@ describe("AssetTokenEth", () => {
             expect(await assetTokenEth.balanceOf(assetTokenEth.address))
                 .to.be.equal(amount_.sub(expandToDecimals(20, 18)));
             expect(afterBalance.sub(beforeBalance)).to.be.equal(
-                price_.mul(20).mul(expandToDecimals(1, 18)).div((await eController.getPrice(payment_)))
+                price_.mul(20)
             );
         })
 

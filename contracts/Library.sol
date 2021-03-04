@@ -51,7 +51,7 @@ library AssetTokenLibrary {
         pure
         returns (uint)
     {
-        return self.amount.mul(self.assetTokenPrice);
+        return self.amount.mul(self.assetTokenPrice).div(1e18);
     }
 
     function getAmount(AmountLocalVars memory self)
@@ -59,6 +59,6 @@ library AssetTokenLibrary {
         pure
         returns (uint)
     {
-        return self.spent.div(self.assetTokenPrice);
+        return self.spent.mul(1e18).div(self.assetTokenPrice);
     }
 }

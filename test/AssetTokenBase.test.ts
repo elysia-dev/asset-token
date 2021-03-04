@@ -11,9 +11,11 @@ describe("AssetTokenBase", () => {
     let assetTokenBaseTest: AssetTokenBaseTest;
     let eController: EController;
 
-    const amount_ = 10000
-    const price_ = expandToDecimals(5, 18)
-    const rewardPerBlock_ = expandToDecimals(5, 14)
+    const amount_ = expandToDecimals(10000, 18)
+    // 0.005 ether per assetToken
+    const price_ = expandToDecimals(5, 15)
+    // price * interestRate / (secondsPerYear * blockTime)
+    const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = 0
     const latitude_ = 123
     const longitude_ = 456
@@ -21,7 +23,7 @@ describe("AssetTokenBase", () => {
     const interestRate_ = expandToDecimals(1, 17)
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
-    const decimals_ = 0
+    const decimals_ = 18
 
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
