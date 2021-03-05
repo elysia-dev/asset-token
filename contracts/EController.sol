@@ -2,12 +2,9 @@
 pragma solidity 0.7.4;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./IEPriceOracle.sol";
-import "./EPriceOracleEth.sol";
 import "./IAssetToken.sol";
 
 interface IEController {
-    function getPrice(uint payment) external view returns (uint);
     function isAdmin(address account) external view returns (bool);
 }
 
@@ -20,40 +17,12 @@ contract EController is IEController, AccessControl {
     // AssetToken list
     IAssetTokenBase[] public assetTokenList;
 
-    // 0: el, 1: eth, 2: wBTC ...
-    mapping(uint256 => IEPriceOracle) public ePriceOracle;
-
-    /// @notice Emitted when new priceOracle is set
-    event NewPriceOracle(address ePriceOracle);
-
     /// @notice Emitted when new assetToken is set
     event NewAssetToken(address assetToken);
 
     constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, address(this));
-    }
-
-    /*** Oracle View functions ***/
-
-    function getPrice(uint payment) external view override returns (uint256) {
-        IEPriceOracle oracle = ePriceOracle[payment];
-        return oracle.getPrice();
-    }
-
-    /*** Admin Functions on Setup ***/
-
-    /**
-     * @notice Set EPriceoracle in each payment
-     * @param ePriceOracle_ The address of the ePriceOracle to be enabled
-     * @param payment The payment of price feed
-     */
-    function setEPriceOracle(IEPriceOracle ePriceOracle_, uint256 payment)
-        external
-        onlyAdmin
-    {
-        ePriceOracle[payment] = ePriceOracle_;
-        emit NewPriceOracle(address(ePriceOracle_));
     }
 
     /**

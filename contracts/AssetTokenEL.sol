@@ -127,8 +127,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        uint256 reward =
-            getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
+        uint256 reward = getReward(msg.sender);
 
         require(
             reward <= _el.balanceOf(address(this)),

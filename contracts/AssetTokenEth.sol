@@ -127,8 +127,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         override
         whenNotPaused
     {
-        uint256 reward =
-            getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
+        uint256 reward = getReward(msg.sender);
 
         require(
             reward <= address(this).balance,
