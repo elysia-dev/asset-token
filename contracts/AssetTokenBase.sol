@@ -45,6 +45,8 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     /// @notice Emitted when eController is changed
     event NewController(address newController);
 
+    event NewCashRewardRatio(uint256 newCashReserveRatio);
+
     constructor(
         IEController eController_,
         uint256 amount_,
@@ -109,18 +111,26 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         emit NewController(address(eController));
     }
 
-    function setRewardPerBlock(uint256 rewardPerBlock_)
+    function setRewardPerBlock(uint256 newRewardPerBlock)
         external
         override
         onlyAdmin(msg.sender)
-        returns (bool)
     {
-        rewardPerBlock = rewardPerBlock_;
+        rewardPerBlock = newRewardPerBlock;
 
-        emit NewRewardPerBlock(rewardPerBlock_);
-
-        return true;
+        emit NewRewardPerBlock(newRewardPerBlock);
     }
+
+    function setCashReserveRatio(uint256 cashReserveRatio_)
+        external
+        override
+        onlyAdmin(msg.sender)
+    {
+        cashReserveRatio = cashReserveRatio_;
+
+        emit NewCashRewardRatio(cashReserveRatio_);
+    }
+
 
     function pause() external override onlyAdmin(msg.sender) {
         _pause();

@@ -2,10 +2,11 @@
 pragma solidity 0.7.4;
 
 interface IAssetTokenBase {
-    function setRewardPerBlock(uint256 rewardPerBlock_) external returns (bool);
+    function setEController(address newEController) external;
+    function setRewardPerBlock(uint256 newRewardPerBlock) external;
+    function setCashReserveRatio(uint256 newCashReserveRatio) external;
     function pause() external;
     function unpause() external;
-    function setEController(address eController) external;
     function getLatitude() external view returns (uint256);
     function getLongitude() external view returns (uint256);
     function getAssetPrice() external view returns (uint256);
