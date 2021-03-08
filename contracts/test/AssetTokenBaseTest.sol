@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.0;
+pragma solidity 0.8.2;
 
 import "../AssetTokenBase.sol";
 
@@ -10,14 +10,11 @@ contract AssetTokenBaseTest is AssetTokenBase {
         uint256 price_,
         uint256 rewardPerBlock_,
         uint256 payment_,
-        uint256 latitude_,
-        uint256 longitude_,
-        uint256 assetPrice_,
+        uint256[] memory coordinate_,
         uint256 interestRate_,
         uint256 cashReserveRatio_,
         string memory name_,
-        string memory symbol_,
-        uint8 decimals_
+        string memory symbol_
     )
         AssetTokenBase(
             eController_,
@@ -25,14 +22,11 @@ contract AssetTokenBaseTest is AssetTokenBase {
             price_,
             rewardPerBlock_,
             payment_,
-            latitude_,
-            longitude_,
-            assetPrice_,
+            coordinate_,
             interestRate_,
             cashReserveRatio_,
             name_,
-            symbol_,
-            decimals_
+            symbol_
         )
     {
         _transfer(address(this), msg.sender, amount_/2);

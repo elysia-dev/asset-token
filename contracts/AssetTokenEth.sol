@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.0;
+pragma solidity 0.8.2;
 
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
 
 contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
-    using AssetTokenLibrary for SpentLocalVars;
-    using AssetTokenLibrary for AmountLocalVars;
-    using AssetTokenLibrary for ReserveLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.ReserveLocalVars;
 
     /// @notice Emitted when an user claimed reward
     event RewardClaimed(address account, uint256 reward);
@@ -19,14 +19,11 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         uint256 price_,
         uint256 rewardPerBlock_,
         uint256 payment_,
-        uint256 latitude_,
-        uint256 longitude_,
-        uint256 assetPrice_,
+        uint256[] memory coordinate_,
         uint256 interestRate_,
         uint256 cashReserveRatio_,
         string memory name_,
-        string memory symbol_,
-        uint8 decimals_
+        string memory symbol_
     )
         AssetTokenBase(
             eController_,
@@ -34,14 +31,11 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             price_,
             rewardPerBlock_,
             payment_,
-            latitude_,
-            longitude_,
-            assetPrice_,
+            coordinate_,
             interestRate_,
             cashReserveRatio_,
             name_,
-            symbol_,
-            decimals_
+            symbol_
         )
     {}
 
@@ -64,8 +58,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             "Not enough msg.value"
         );
 
-        AmountLocalVars memory vars =
-            AmountLocalVars({
+        AssetTokenLibrary.AmountLocalVars memory vars =
+            AssetTokenLibrary.AmountLocalVars({
                 spent: msg.value,
                 assetTokenPrice: price
             });
@@ -92,8 +86,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {
         _checkBalance(msg.sender, amount);
 
-        SpentLocalVars memory vars =
-            SpentLocalVars({
+        AssetTokenLibrary.SpentLocalVars memory vars =
+            AssetTokenLibrary.SpentLocalVars({
                 amount: amount,
                 assetTokenPrice: price
             });
@@ -108,7 +102,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         _transfer(msg.sender, address(this), amount);
 
         require(
-            msg.sender.send(spent),
+            payable(msg.sender).send(spent),
             "Eth : send failed"
         );
     }
@@ -181,8 +175,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         view
         returns(bool)
     {
-        ReserveLocalVars memory vars =
-            ReserveLocalVars({
+        AssetTokenLibrary.ReserveLocalVars memory vars =
+            AssetTokenLibrary.ReserveLocalVars({
                 price: price,
                 totalSupply: totalSupply(),
                 interestRate: interestRate,

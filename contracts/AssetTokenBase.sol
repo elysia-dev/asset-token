@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.0;
+pragma solidity 0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./IAssetToken.sol";
 import "./EController.sol";
 import "./Library.sol";
 
 contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
-    using AssetTokenLibrary for RewardLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.RewardLocalVars;
 
     IEController public eController;
 
@@ -43,7 +43,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     /// @notice Emitted when eController is changed
     event NewController(address newController);
 
-    event NewCashRewardRatio(uint256 newCashReserveRatio);
+    event NewCashReserveRatio(uint256 newCashReserveRatio);
 
     constructor(
         IEController eController_,
@@ -51,26 +51,20 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         uint256 price_,
         uint256 rewardPerBlock_,
         uint256 payment_,
-        uint256 latitude_,
-        uint256 longitude_,
-        uint256 assetPrice_,
+        uint256[] memory coordinate_,
         uint256 interestRate_,
         uint256 cashReserveRatio_,
         string memory name_,
-        string memory symbol_,
-        uint8 decimals_
+        string memory symbol_
     ) ERC20(name_, symbol_) {
         eController = eController_;
         price = price_;
-        rewardPerBlock = rewardPerBlock_;
         payment = payment_;
-        latitude = latitude_;
-        longitude = longitude_;
-        assetPrice = assetPrice_;
         interestRate = interestRate_;
-        cashReserveRatio = cashReserveRatio_;
+        _setCoordinate(coordinate_[0], coordinate_[1]);
+        _setRewardPerBlock(rewardPerBlock_);
+        _setCashReserveRatio(cashReserveRatio_);
         _mint(address(this), amount_);
-        _setupDecimals(decimals_);
     }
 
     /*** View functions ***/
@@ -116,21 +110,33 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         override
         onlyAdmin(msg.sender)
     {
-        rewardPerBlock = newRewardPerBlock;
+        _setRewardPerBlock(newRewardPerBlock);
 
         emit NewRewardPerBlock(newRewardPerBlock);
     }
 
-    function setCashReserveRatio(uint256 cashReserveRatio_)
+    function setCashReserveRatio(uint256 newCashReserveRatio)
         external
         override
         onlyAdmin(msg.sender)
     {
-        cashReserveRatio = cashReserveRatio_;
+        _setCashReserveRatio(newCashReserveRatio);
 
-        emit NewCashRewardRatio(cashReserveRatio_);
+        emit NewCashReserveRatio(newCashReserveRatio);
     }
 
+    function _setRewardPerBlock(uint256 newRewardPerBlock) internal {
+        rewardPerBlock = newRewardPerBlock;
+    }
+
+    function _setCashReserveRatio(uint256 newCashReserveRatio) internal {
+        cashReserveRatio = newCashReserveRatio;
+    }
+
+    function _setCoordinate(uint newLatitude, uint256 newLongitude) internal {
+        latitude = newLatitude;
+        longitude = newLongitude;
+    }
 
     function pause() external override onlyAdmin(msg.sender) {
         _pause();
@@ -148,8 +154,8 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
      * @return saved reward + new reward
      */
     function getReward(address account) public view returns (uint256) {
-        RewardLocalVars memory vars =
-            RewardLocalVars({
+        AssetTokenLibrary.RewardLocalVars memory vars =
+            AssetTokenLibrary.RewardLocalVars({
                 newReward: 0,
                 accountReward: _rewards[account],
                 accountBalance: balanceOf(account),

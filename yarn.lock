@@ -565,10 +565,10 @@
     find-up "^4.1.0"
     fs-extra "^8.1.0"
 
-"@openzeppelin/contracts@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.3.0.tgz#ffdb693c5c349fc33bba420248dd3ac0a2d7c408"
-  integrity sha512-AemZEsQYtUp1WRkcmZm1div5ORfTpLquLaziCIrSagjxyKdmObxuaY1yjQ5SHFMctR8rLwp706NXTbiIRJg7pw==
+"@openzeppelin/contracts@^4.0.0-beta.1":
+  version "4.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.0.0-beta.1.tgz#23476cf3e4e3fdd9deb246457e7edea4aebe7228"
+  integrity sha512-O+zuP2DbZPHlX/ViTmewpVU12k7vi4YU6fzWRXDKzJql7RHF5mFOL/z3cILp4iVoz8wH+drFYXnQMaj8/Sc0BQ==
 
 "@openzeppelin/test-helpers@^0.5.6":
   version "0.5.10"

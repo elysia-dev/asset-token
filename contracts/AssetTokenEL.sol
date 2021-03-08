@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.0;
+pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
 
 contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
-    using AssetTokenLibrary for SpentLocalVars;
-    using AssetTokenLibrary for AmountLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
 
     IERC20 private _el;
 
@@ -22,14 +21,11 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         uint256 price_,
         uint256 rewardPerBlock_,
         uint256 payment_,
-        uint256 latitude_,
-        uint256 longitude_,
-        uint256 assetPrice_,
+        uint256[] memory coordinate_,
         uint256 interestRate_,
         uint256 cashReserveRatio_,
         string memory name_,
-        string memory symbol_,
-        uint8 decimals_
+        string memory symbol_
     )
         AssetTokenBase(
             eController_,
@@ -37,14 +33,11 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
             price_,
             rewardPerBlock_,
             payment_,
-            latitude_,
-            longitude_,
-            assetPrice_,
+            coordinate_,
             interestRate_,
             cashReserveRatio_,
             name_,
-            symbol_,
-            decimals_
+            symbol_
         )
     {
         _el = el_;
@@ -64,8 +57,8 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        AmountLocalVars memory vars =
-            AmountLocalVars({
+        AssetTokenLibrary.AmountLocalVars memory vars =
+            AssetTokenLibrary.AmountLocalVars({
                 spent: spent,
                 assetTokenPrice: price
             });
@@ -99,8 +92,8 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        SpentLocalVars memory vars =
-            SpentLocalVars({
+        AssetTokenLibrary.SpentLocalVars memory vars =
+            AssetTokenLibrary.SpentLocalVars({
                 amount: amount,
                 assetTokenPrice: price
             });
