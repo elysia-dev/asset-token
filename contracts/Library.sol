@@ -24,6 +24,15 @@ struct AmountLocalVars {
     uint256 assetTokenPrice;
 }
 
+struct ReserveLocalVars {
+    uint256 price;
+    uint256 totalSupply;
+    uint256 interestRate;
+    uint256 balanceOfAssetToken;
+    uint256 contractEther;
+    uint256 cashReserveRatio;
+}
+
 library AssetTokenLibrary {
     using SafeMath for uint256;
 
@@ -37,13 +46,34 @@ library AssetTokenLibrary {
             self.blockNumber > self.rewardBlockNumber
         ) {
             self.diffBlock = self.blockNumber.sub(self.rewardBlockNumber);
-            self.newReward = self
-                .accountBalance
+            self.newReward = self.accountBalance
                 .mul(self.diffBlock)
                 .mul(self.rewardPerBlock)
                 .div(self.totalSupply);
         }
         return self.accountReward.add(self.newReward);
+    }
+
+    function checkReserve(ReserveLocalVars memory self)
+        internal
+        pure
+        returns (bool)
+    {
+        if (
+            self.price
+                .mul(self.totalSupply
+                    .mul(self.interestRate)
+                    .div(1e18)
+                    .add(self.totalSupply)
+                    .sub(self.balanceOfAssetToken)
+                )
+                .mul(self.cashReserveRatio)
+                .div(1e18)
+                > self.contractEther
+        ) {
+            return false;
+        }
+        return true;
     }
 
     function getSpent(SpentLocalVars memory self)
@@ -61,4 +91,6 @@ library AssetTokenLibrary {
     {
         return self.spent.mul(1e18).div(self.assetTokenPrice);
     }
+
+
 }

@@ -19,6 +19,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     uint256 public longitude;
     uint256 public assetPrice;
     uint256 public interestRate;
+    uint256 public cashReserveRatio;
 
     // price per Elysia Asset Token
     // decimals: 18

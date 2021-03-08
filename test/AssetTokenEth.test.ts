@@ -7,12 +7,10 @@ import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
 import AssetTokenEthArtifact from "../artifacts/contracts/AssetTokenEth.sol/AssetTokenEth.json"
-import EPriceOracleTestArtifact from "../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
 
 describe("AssetTokenEth", () => {
     let assetTokenEth: AssetTokenEth;
     let eController: EController;
-    let ePriceOracleEth: EPriceOracleTest
 
     const amount_ = expandToDecimals(10000, 18)
     // 0.005 ether = 1 assetToken
@@ -37,10 +35,6 @@ describe("AssetTokenEth", () => {
     }
 
     beforeEach(async () => {
-        ePriceOracleEth = await deployContract(
-            admin,
-            EPriceOracleTestArtifact
-        ) as EPriceOracleTest;
         eController = await deployContract(
             admin,
             EControllerArtifact
@@ -64,14 +58,45 @@ describe("AssetTokenEth", () => {
             ],
         ) as AssetTokenEth
         await eController.connect(admin)
-            .setEPriceOracle(ePriceOracleEth.address, 1)
-        await eController.connect(admin)
             .setAssetTokens([assetTokenEth.address])
-        await ePriceOracleEth.connect(admin)
-            .setPrice(expandToDecimals(1000, 18))
     })
 
-    describe(".purchase", async () => {
+    xdescribe(".reserve requirement system", async () => {
+        context('reserve calculator', async () => {
+            it('return false for insufficient reserve for payment', async () => {
+            })
+        })
+
+        context('send reserve', async () => {
+            it('do not send reserve for insufficient reserve', async () => {
+            })
+
+            it('send reserve and emit event', async () => {
+            })
+        })
+
+        context('request for payment', async () => {
+            it('do not send request for sufficient reserve', async () => {
+            })
+
+            it('send request for insufficient reserve for payment', async () => {
+            })
+        })
+
+        context('request')
+
+        it('cannot execute purchase, refund and claimReward when paused', async () => {
+            await assetTokenEth.connect(admin).pause();
+            await expect(assetTokenEth.purchase())
+                .to.be.revertedWith('Pausable: paused')
+            await expect(assetTokenEth.refund(expandToDecimals(20, 18)))
+                .to.be.revertedWith('Pausable: paused')
+            await expect(assetTokenEth.claimReward())
+                .to.be.revertedWith('Pausable: paused')
+        })
+    })
+
+    xdescribe(".purchase", async () => {
         it('if account has sufficient allowed eth balance, can purchase token', async () => {
             const beforeBalance = await provider.getBalance(assetTokenEth.address)
             expect(await assetTokenEth.connect(account1).purchase(options))
@@ -93,7 +118,7 @@ describe("AssetTokenEth", () => {
         })
     })
 
-    describe(".refund", async () => {
+    xdescribe(".refund", async () => {
         it('if account and contract has sufficient balance, refund token', async () => {
             await assetTokenEth.connect(account1).purchase(options)
             expect(await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
@@ -122,7 +147,7 @@ describe("AssetTokenEth", () => {
         })
     })
 
-    describe('.withdrawEthToAdmin', async () => {
+    xdescribe('.withdrawEthToAdmin', async () => {
         it('admin can withdrwal all ether.', async () => {
             expect(await assetTokenEth.connect(admin).withdrawToAdmin())
                 .to.changeEtherBalance(account1, await provider.getBalance(assetTokenEth.address))
@@ -135,7 +160,7 @@ describe("AssetTokenEth", () => {
         })
     })
 
-    describe('Asset token Pausable', async () => {
+    xdescribe('Asset token Pausable', async () => {
         it('Admin can pause asset token', async () => {
             await expect(assetTokenEth.connect(admin).pause())
                 .to.emit(assetTokenEth, 'Paused')
@@ -160,7 +185,7 @@ describe("AssetTokenEth", () => {
     // Uncaught RuntimeError: abort(AssertionError:
     // Expected "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" to change balance by 0 wei, but it has changed by 1500000000 wei).
     // Build with -s ASSERTIONS=1 for more info.
-    describe('.claimReward', async () => {
+    xdescribe('.claimReward', async () => {
         let firstBlock: number;
         let secondBlock: number;
         let thirdBlock: number;

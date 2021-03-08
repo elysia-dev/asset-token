@@ -10,6 +10,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     using SafeMath for uint256;
     using AssetTokenLibrary for SpentLocalVars;
     using AssetTokenLibrary for AmountLocalVars;
+    using AssetTokenLibrary for ReserveLocalVars;
 
     /// @notice Emitted when an user claimed reward
     event RewardClaimed(address account, uint256 reward);
@@ -165,6 +166,32 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             balanceOf(seller) >= amount,
             "AssetToken: Insufficient seller balance."
         );
+    }
+
+    function checkReserve()
+        public
+        view
+        returns(bool)
+    {
+        return _checkReserve();
+    }
+
+    function _checkReserve()
+        internal
+        view
+        returns(bool)
+    {
+        ReserveLocalVars memory vars =
+            ReserveLocalVars({
+                price: price,
+                totalSupply: totalSupply(),
+                interestRate: interestRate,
+                balanceOfAssetToken: balanceOf(address(this)),
+                contractEther: address(this).balance,
+                cashReserveRatio: cashReserveRatio
+            });
+
+        return vars.checkReserve();
     }
 
     /**
