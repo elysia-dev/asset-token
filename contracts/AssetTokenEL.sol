@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.4;
+pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./EController.sol";
@@ -7,7 +7,6 @@ import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
 
 contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
-    using SafeMath for uint256;
     using AssetTokenLibrary for SpentLocalVars;
     using AssetTokenLibrary for AmountLocalVars;
 
@@ -27,6 +26,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         uint256 longitude_,
         uint256 assetPrice_,
         uint256 interestRate_,
+        uint256 cashReserveRatio_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
@@ -41,6 +41,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
             longitude_,
             assetPrice_,
             interestRate_,
+            cashReserveRatio_,
             name_,
             symbol_,
             decimals_

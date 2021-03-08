@@ -22,6 +22,7 @@ describe("AssetTokenEth", () => {
     const longitude_ = 456
     const assetPrice_ = expandToDecimals(5, 21)
     const interestRate_ = expandToDecimals(1, 17)
+    const cashReserveRatio_ = expandToDecimals(5, 17)
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
     const decimals_ = 18
@@ -52,6 +53,7 @@ describe("AssetTokenEth", () => {
                 longitude_,
                 assetPrice_,
                 interestRate_,
+                cashReserveRatio_,
                 name_,
                 symbol_,
                 decimals_,
@@ -61,9 +63,17 @@ describe("AssetTokenEth", () => {
             .setAssetTokens([assetTokenEth.address])
     })
 
-    xdescribe(".reserve requirement system", async () => {
+    describe(".reserve requirement system", async () => {
         context('reserve calculator', async () => {
             it('return false for insufficient reserve for payment', async () => {
+                await assetTokenEth.connect(account1).purchase({value: ethers.utils.parseEther("40")})
+                console.log("account", await (await assetTokenEth.balanceOf(account1.address)).toString())
+                console.log("contract", await (await assetTokenEth.balanceOf(assetTokenEth.address)).toString())
+                console.log("contract ether:", await (await provider.getBalance(assetTokenEth.address)).toString())
+                console.log("checkReserve", await assetTokenEth.checkReserve())
+                await assetTokenEth.connect(admin).withdrawToAdmin()
+                console.log("contract ether:", await (await provider.getBalance(assetTokenEth.address)).toString())
+                console.log("checkReserve", await assetTokenEth.checkReserve())
             })
         })
 
@@ -82,8 +92,6 @@ describe("AssetTokenEth", () => {
             it('send request for insufficient reserve for payment', async () => {
             })
         })
-
-        context('request')
 
         it('cannot execute purchase, refund and claimReward when paused', async () => {
             await assetTokenEth.connect(admin).pause();

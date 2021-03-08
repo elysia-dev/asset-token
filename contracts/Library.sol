@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.4;
+pragma solidity 0.8.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "hardhat/console.sol";
 
 struct RewardLocalVars {
     uint256 newReward;
@@ -34,7 +34,6 @@ struct ReserveLocalVars {
 }
 
 library AssetTokenLibrary {
-    using SafeMath for uint256;
 
     function getReward(RewardLocalVars memory self)
         internal
@@ -45,13 +44,13 @@ library AssetTokenLibrary {
             self.rewardBlockNumber != 0 &&
             self.blockNumber > self.rewardBlockNumber
         ) {
-            self.diffBlock = self.blockNumber.sub(self.rewardBlockNumber);
+            self.diffBlock = self.blockNumber - self.rewardBlockNumber;
             self.newReward = self.accountBalance
-                .mul(self.diffBlock)
-                .mul(self.rewardPerBlock)
-                .div(self.totalSupply);
+                * self.diffBlock
+                * self.rewardPerBlock
+                / self.totalSupply;
         }
-        return self.accountReward.add(self.newReward);
+        return self.accountReward + self.newReward;
     }
 
     function checkReserve(ReserveLocalVars memory self)
@@ -59,21 +58,18 @@ library AssetTokenLibrary {
         pure
         returns (bool)
     {
-        if (
+        return (
             self.price
-                .mul(self.totalSupply
-                    .mul(self.interestRate)
-                    .div(1e18)
-                    .add(self.totalSupply)
-                    .sub(self.balanceOfAssetToken)
+                * (self.totalSupply
+                    * self.interestRate
+                    / 1e18
+                    + self.totalSupply
+                    - self.balanceOfAssetToken
                 )
-                .mul(self.cashReserveRatio)
-                .div(1e18)
-                > self.contractEther
-        ) {
-            return false;
-        }
-        return true;
+                * self.cashReserveRatio
+                / 1e36
+                >= self.contractEther
+        );
     }
 
     function getSpent(SpentLocalVars memory self)
@@ -81,7 +77,7 @@ library AssetTokenLibrary {
         pure
         returns (uint)
     {
-        return self.amount.mul(self.assetTokenPrice).div(1e18);
+        return self.amount * self.assetTokenPrice / 1e18;
     }
 
     function getAmount(AmountLocalVars memory self)
@@ -89,7 +85,7 @@ library AssetTokenLibrary {
         pure
         returns (uint)
     {
-        return self.spent.mul(1e18).div(self.assetTokenPrice);
+        return self.spent * 1e18 / self.assetTokenPrice;
     }
 
 

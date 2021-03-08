@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.4;
+pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./IAssetToken.sol";
 import "./EController.sol";
 import "./Library.sol";
 
 contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
-    using SafeMath for uint256;
     using AssetTokenLibrary for RewardLocalVars;
 
     IEController public eController;
@@ -57,6 +55,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         uint256 longitude_,
         uint256 assetPrice_,
         uint256 interestRate_,
+        uint256 cashReserveRatio_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
@@ -69,6 +68,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         longitude = longitude_;
         assetPrice = assetPrice_;
         interestRate = interestRate_;
+        cashReserveRatio = cashReserveRatio_;
         _mint(address(this), amount_);
         _setupDecimals(decimals_);
     }

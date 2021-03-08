@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.4;
+pragma solidity 0.8.0;
 
 import "../AssetTokenBase.sol";
 
@@ -14,6 +14,7 @@ contract AssetTokenBaseTest is AssetTokenBase {
         uint256 longitude_,
         uint256 assetPrice_,
         uint256 interestRate_,
+        uint256 cashReserveRatio_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
@@ -28,6 +29,7 @@ contract AssetTokenBaseTest is AssetTokenBase {
             longitude_,
             assetPrice_,
             interestRate_,
+            cashReserveRatio_,
             name_,
             symbol_,
             decimals_
