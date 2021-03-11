@@ -2,7 +2,6 @@ import { expect } from "chai";
 import { ethers, waffle } from "hardhat";
 import { EController } from "../typechain/EController";
 import { AssetTokenEth } from "../typechain/AssetTokenEth"
-import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
 import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
@@ -18,14 +17,11 @@ describe("AssetTokenEth", () => {
     // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = 1
-    const latitude_ = 123
-    const longitude_ = 456
-    const assetPrice_ = expandToDecimals(5, 21)
+    const coordinate_ = [123, 456]
     const interestRate_ = expandToDecimals(1, 17)
     const cashReserveRatio_ = expandToDecimals(5, 17)
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
-    const decimals_ = 18
 
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
@@ -49,14 +45,11 @@ describe("AssetTokenEth", () => {
                 price_,
                 rewardPerBlock_,
                 payment_,
-                latitude_,
-                longitude_,
-                assetPrice_,
+                coordinate_,
                 interestRate_,
                 cashReserveRatio_,
                 name_,
                 symbol_,
-                decimals_,
             ],
         ) as AssetTokenEth
         await eController.connect(admin)
@@ -67,18 +60,15 @@ describe("AssetTokenEth", () => {
         context('reserve calculator', async () => {
             it('return false for insufficient reserve for payment', async () => {
                 await assetTokenEth.connect(account1).purchase({value: ethers.utils.parseEther("40")})
-                console.log("account", await (await assetTokenEth.balanceOf(account1.address)).toString())
-                console.log("contract", await (await assetTokenEth.balanceOf(assetTokenEth.address)).toString())
-                console.log("contract ether:", await (await provider.getBalance(assetTokenEth.address)).toString())
-                console.log("checkReserve", await assetTokenEth.checkReserve())
+                expect(await assetTokenEth.checkReserve()).to.be.false
                 await assetTokenEth.connect(admin).withdrawToAdmin()
-                console.log("contract ether:", await (await provider.getBalance(assetTokenEth.address)).toString())
-                console.log("checkReserve", await assetTokenEth.checkReserve())
+                expect(await assetTokenEth.checkReserve()).to.be.true
             })
         })
 
         context('send reserve', async () => {
             it('do not send reserve for insufficient reserve', async () => {
+                
             })
 
             it('send reserve and emit event', async () => {

@@ -28,9 +28,8 @@ library AssetTokenLibrary {
         uint256 price;
         uint256 totalSupply;
         uint256 interestRate;
-        uint256 balanceOfAssetToken;
-        uint256 contractEther;
         uint256 cashReserveRatio;
+        uint256 balanceOfAssetToken;
     }
 
     function getReward(RewardLocalVars memory self)
@@ -51,33 +50,26 @@ library AssetTokenLibrary {
         return self.accountReward + self.newReward;
     }
 
-    function checkReserve(ReserveLocalVars memory self)
+    function checkReserveSurplus(ReserveLocalVars memory self, uint256 contractBalance)
         internal
         pure
-        returns (bool)
-    {
-        return (
-            self.price
-                * checkReserveToken(
-                    self.totalSupply,
-                    self.interestRate,
-                    self.balanceOfAssetToken
-                )
-                * self.cashReserveRatio
-                / 1e36
-                >= self.contractEther
-        );
+        returns (bool) {
+        return (getReserveSurplus(self) * self.cashReserveRatio / 1e36 >= contractBalance);
     }
 
-    function checkReserveToken(
-        uint totalSupply,
-        uint interestRate,
-        uint balanceOfAssetToken
-        ) internal pure returns (uint256)
-            {
-            return (
-                totalSupply * interestRate / 1e18 - totalSupply + balanceOfAssetToken);
-        }
+    function getReserveSurplus(ReserveLocalVars memory self)
+        internal
+        pure
+        returns (uint256)
+    {
+        return  self.price
+                    * (self.totalSupply
+                        * self.interestRate
+                        / 1e18
+                        + self.totalSupply
+                        - self.balanceOfAssetToken
+                    );
+    }
 
     function getSpent(SpentLocalVars memory self)
         internal

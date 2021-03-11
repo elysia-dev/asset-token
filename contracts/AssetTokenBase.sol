@@ -10,6 +10,7 @@ import "./Library.sol";
 
 contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     using AssetTokenLibrary for AssetTokenLibrary.RewardLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.ReserveLocalVars;
 
     IEController public eController;
 
@@ -197,6 +198,35 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         _blockNumbers[account] = block.number;
 
         return true;
+    }
+
+    /**
+     * @notice check reserves of asset token
+     * @return return true if the reserves for payment is insufficient
+     */
+    function checkReserve()
+        public
+        view
+        returns (bool)
+    {
+        return _checkReserve();
+    }
+
+    function _checkReserve()
+        internal
+        view
+        returns (bool)
+    {
+        AssetTokenLibrary.ReserveLocalVars memory vars =
+            AssetTokenLibrary.ReserveLocalVars({
+                price: price,
+                totalSupply: totalSupply(),
+                interestRate: interestRate,
+                cashReserveRatio: cashReserveRatio,
+                balanceOfAssetToken: balanceOf(address(this))
+            });
+
+        return (vars.checkReserveSurplus(address(this).balance));
     }
 
     /// @dev Restricted to members of the admin role.

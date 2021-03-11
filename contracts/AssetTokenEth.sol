@@ -162,32 +162,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         );
     }
 
-    function checkReserve()
-        public
-        view
-        returns(bool)
-    {
-        return _checkReserve();
-    }
-
-    function _checkReserve()
-        internal
-        view
-        returns(bool)
-    {
-        AssetTokenLibrary.ReserveLocalVars memory vars =
-            AssetTokenLibrary.ReserveLocalVars({
-                price: price,
-                totalSupply: totalSupply(),
-                interestRate: interestRate,
-                balanceOfAssetToken: balanceOf(address(this)),
-                contractEther: address(this).balance,
-                cashReserveRatio: cashReserveRatio
-            });
-
-        return vars.checkReserve();
-    }
-
     /**
      * @dev allow asset token to receive eth from other accounts.
      * Monthly rent profit (eth) is acummulated in asset token from elysia admin account
