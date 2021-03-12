@@ -50,14 +50,14 @@ library AssetTokenLibrary {
         return self.accountReward + self.newReward;
     }
 
-    function checkReserveSurplus(ReserveLocalVars memory self, uint256 contractBalance)
+    function getReserveSurplus(ReserveLocalVars memory self, uint256 contractBalance)
         internal
         pure
-        returns (bool) {
-        return (getReserveSurplus(self) * self.cashReserveRatio / 1e36 >= contractBalance);
+        returns (uint256) {
+        return (getReserve(self) * self.cashReserveRatio / 1e36 - contractBalance);
     }
 
-    function getReserveSurplus(ReserveLocalVars memory self)
+    function getReserve(ReserveLocalVars memory self)
         internal
         pure
         returns (uint256)

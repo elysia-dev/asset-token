@@ -38,12 +38,16 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     // Account block numbers
     mapping(address => uint256) private _blockNumbers;
 
+    /// @notice Emitted when reserve deposited
+    event ReserveDeposited(uint256 reserveSurplus);
+
     /// @notice Emitted when rewards per block is changed
     event NewRewardPerBlock(uint256 newRewardPerBlock);
 
     /// @notice Emitted when eController is changed
     event NewController(address newController);
 
+    /// @notice Emitted when cashReserveRatio is set
     event NewCashReserveRatio(uint256 newCashReserveRatio);
 
     constructor(
@@ -202,7 +206,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
 
     /**
      * @notice check reserves of asset token
-     * @return return true if the reserves for payment is insufficient
+     * @return return true if the reserves for payment is sufficient
      */
     function checkReserve()
         public
@@ -226,7 +230,24 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
                 balanceOfAssetToken: balanceOf(address(this))
             });
 
-        return (vars.checkReserveSurplus(address(this).balance));
+        return (vars.getReserveSurplus(address(this).balance)>0);
+    }
+
+    /**
+     * @notice deposit reserve into the controller
+     * @return return true if the reserves for payment is insufficient
+     */
+    function _depositReserve(uint256 reserveSurplus) internal returns (bool) {
+        payable(address(eController)).send(reserveSurplus);
+        emit ReserveDeposited(reserveSurplus);
+    }
+
+    /**
+     * @notice withdraw reserve from the controller
+     * @return return true if the reserves for payment is insufficient
+     */
+    function withdrawReserve() internal returns (bool) {
+
     }
 
     /// @dev Restricted to members of the admin role.
