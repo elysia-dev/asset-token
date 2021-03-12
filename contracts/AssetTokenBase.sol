@@ -208,18 +208,23 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
      * @notice check reserves of asset token
      * @return return true if the reserves for payment is sufficient
      */
-    function checkReserve()
-        public
-        view
-        returns (bool)
-    {
-        return _checkReserve();
-    }
-
-    function _checkReserve()
+    function _checkReserveSurplus()
         internal
         view
         returns (bool)
+    {
+        return (_getReserveSurplus()>0);
+    }
+
+    /**
+     * @notice get reserves of asset token
+     * @return return true if the reserves for payment is sufficient
+     */
+
+    function _getReserveSurplus()
+        internal
+        view
+        returns (uint256)
     {
         AssetTokenLibrary.ReserveLocalVars memory vars =
             AssetTokenLibrary.ReserveLocalVars({
@@ -229,8 +234,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
                 cashReserveRatio: cashReserveRatio,
                 balanceOfAssetToken: balanceOf(address(this))
             });
-
-        return (vars.getReserveSurplus(address(this).balance)>0);
+        return (vars.getReserveSurplus(address(this).balance));
     }
 
     /**

@@ -68,6 +68,10 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
         _checkBalance(address(this), amount);
         _transfer(address(this), msg.sender, amount);
+
+        if (_checkReserveSurplus()) {
+            _depositReserve(_getReserveSurplus());
+        }
     }
 
     /**
