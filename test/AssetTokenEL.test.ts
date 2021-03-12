@@ -9,13 +9,11 @@ import { deployContract } from "ethereum-waffle";
 import AssetTokenELArtifact from "../artifacts/contracts/AssetTokenEl.sol/AssetTokenEL.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
 import TestnetELArtifact from "../artifacts/contracts/test/TestnetEL.sol/TestnetEL.json"
-import EPriceOracleTestArtifact from "../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
 
 describe("AssetTokenEl", () => {
     let assetTokenEL: AssetTokenEL;
     let eController: EController;
     let el: TestnetEL;
-    let ePriceOracleEL: EPriceOracleTest
 
     const amount_ = expandToDecimals(10000, 18)
     const price_ = expandToDecimals(5, 18)
@@ -46,10 +44,6 @@ describe("AssetTokenEl", () => {
                 18
             ]
         ) as TestnetEL;
-        ePriceOracleEL = await deployContract(
-            admin,
-            EPriceOracleTestArtifact
-        ) as EPriceOracleTest;
         eController = await deployContract(
             admin,
             EControllerArtifact
@@ -74,11 +68,7 @@ describe("AssetTokenEl", () => {
             ]
         ) as AssetTokenEL;
         await eController.connect(admin)
-            .setEPriceOracle(ePriceOracleEL.address, 0)
-        await eController.connect(admin)
             .setAssetTokens([assetTokenEL.address])
-        await ePriceOracleEL.connect(admin)
-            .setPrice(elPrice)
     })
 
     context(".purchase", async () => {

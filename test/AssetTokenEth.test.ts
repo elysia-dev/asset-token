@@ -57,22 +57,26 @@ describe("AssetTokenEth", () => {
     })
 
     describe(".reserve requirement system", async () => {
+        beforeEach(async () => {
+            await admin.sendTransaction({value: ethers.utils.parseEther("1"), to: assetTokenEth.address})
+        })
+
         context('reserve calculator', async () => {
             it('return false for insufficient reserve for payment', async () => {
-                await assetTokenEth.connect(account1).purchase({value: ethers.utils.parseEther("40")})
-                expect(await assetTokenEth.checkReserveSurplus()).to.be.false
-                await assetTokenEth.connect(admin).withdrawToAdmin()
-                expect(await assetTokenEth.checkReserveSurplus()).to.be.true
             })
         })
 
         context('send reserve', async () => {
             it('do not send reserve for insufficient reserve', async () => {
-                await assetTokenEth.connect(account1).purchase({value: ethers.utils.parseEther("40")})
+                await assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")})
             })
 
             it('send reserve and emit event for excess reserve', async () => {
-                
+                await expect(assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")}))
+                .to.emit(assetTokenEth, 'ReserveDeposited')
+                expect(await provider.getBalance(assetTokenEth.address))
+                .to.be.equal(ethers.utils.parseEther("22.5"))
+                expect(await provider.getBalance(assetTokenEth.address))
             })
         })
 

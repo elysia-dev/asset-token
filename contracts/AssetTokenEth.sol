@@ -4,6 +4,7 @@ pragma solidity 0.8.2;
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
+import "hardhat/console.sol";
 
 contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
@@ -210,12 +211,14 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
     /**
      * @notice deposit reserve into the controller
-     * @return return true if the reserves for payment is insufficient
      */
-    function _depositReserve(uint256 reserveSurplus) internal returns (bool) {
+    function _depositReserve(uint256 reserveSurplus) internal {
         emit ReserveDeposited(reserveSurplus);
 
-        return payable(address(eController)).send(reserveSurplus);
+        require(
+            payable(address(eController)).send(reserveSurplus),
+            "Eth : send failed"
+        );
     }
 
     /**

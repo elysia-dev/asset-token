@@ -91,4 +91,11 @@ contract EController is IEController, AccessControl {
     function _isAdmin(address account) internal view returns (bool) {
         return hasRole(DEFAULT_ADMIN_ROLE, account);
     }
+
+    /**
+     * @dev allow asset token to receive eth from other accounts.
+     * Controller save the reserves from the asset tokens.
+     */
+    receive() external payable {
+    }
 }
