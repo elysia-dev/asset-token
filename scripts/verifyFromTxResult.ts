@@ -12,8 +12,6 @@ assetTokenEth address 0xa212F0d560c90a2C48Cc2b0B5C05ab4EE7007Ab00
 `;
 
 const [
-  priceOracleEl,
-  priceOracleEth,
   controller,
   assetTokenEl,
   assetTokenEth
@@ -21,32 +19,6 @@ const [
 
 // Verify Controller
 exec(`yarn hardhat verify --network ${hardhat.network.name} ${controller}`, (error, stdout, stderr) => {
-  if (error) {
-    console.log(`error: ${error.message}`);
-    return;
-  }
-  if (stderr) {
-    console.log(`stderr: ${stderr}`);
-    return;
-  }
-  console.log(`stdout: ${stdout}`);
-});
-
-// Verify PriceOracleEL
-exec(`yarn hardhat verify --network ${hardhat.network.name} ${priceOracleEl}`, (error, stdout, stderr) => {
-  if (error) {
-    console.log(`error: ${error.message}`);
-    return;
-  }
-  if (stderr) {
-    console.log(`stderr: ${stderr}`);
-    return;
-  }
-  console.log(`stdout: ${stdout}`);
-});
-
-// Verify PriceOracleEth
-exec(`yarn hardhat verify --network ${hardhat.network.name} --constructor-args scripts/verifyArguments/EPriceOracleEthVerify.js ${priceOracleEth}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;

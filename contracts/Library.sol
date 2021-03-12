@@ -54,7 +54,7 @@ library AssetTokenLibrary {
         internal
         pure
         returns (uint256) {
-        return (getReserve(self) * self.cashReserveRatio / 1e36 - contractBalance);
+        return (getReserve(self) * self.cashReserveRatio / 1e18 - contractBalance);
     }
 
     function getReserve(ReserveLocalVars memory self)
@@ -68,7 +68,7 @@ library AssetTokenLibrary {
                         / 1e18
                         + self.totalSupply
                         - self.balanceOfAssetToken
-                    );
+                    ) / 1e18;
     }
 
     function getSpent(SpentLocalVars memory self)

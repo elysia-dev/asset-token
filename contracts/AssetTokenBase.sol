@@ -220,7 +220,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
      * @notice get reserves of asset token
      * @return return true if the reserves for payment is sufficient
      */
-
     function _getReserveSurplus()
         internal
         view
@@ -242,8 +241,9 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
      * @return return true if the reserves for payment is insufficient
      */
     function _depositReserve(uint256 reserveSurplus) internal returns (bool) {
-        payable(address(eController)).send(reserveSurplus);
         emit ReserveDeposited(reserveSurplus);
+
+        return payable(address(eController)).send(reserveSurplus);
     }
 
     /**
