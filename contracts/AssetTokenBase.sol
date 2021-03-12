@@ -204,56 +204,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         return true;
     }
 
-    /**
-     * @notice check reserves of asset token
-     * @return return true if the reserves for payment is sufficient
-     */
-    function _checkReserveSurplus()
-        internal
-        view
-        returns (bool)
-    {
-        return (_getReserveSurplus()>0);
-    }
-
-    /**
-     * @notice get reserves of asset token
-     * @return return true if the reserves for payment is sufficient
-     */
-    function _getReserveSurplus()
-        internal
-        view
-        returns (uint256)
-    {
-        AssetTokenLibrary.ReserveLocalVars memory vars =
-            AssetTokenLibrary.ReserveLocalVars({
-                price: price,
-                totalSupply: totalSupply(),
-                interestRate: interestRate,
-                cashReserveRatio: cashReserveRatio,
-                balanceOfAssetToken: balanceOf(address(this))
-            });
-        return (vars.getReserveSurplus(address(this).balance));
-    }
-
-    /**
-     * @notice deposit reserve into the controller
-     * @return return true if the reserves for payment is insufficient
-     */
-    function _depositReserve(uint256 reserveSurplus) internal returns (bool) {
-        emit ReserveDeposited(reserveSurplus);
-
-        return payable(address(eController)).send(reserveSurplus);
-    }
-
-    /**
-     * @notice withdraw reserve from the controller
-     * @return return true if the reserves for payment is insufficient
-     */
-    function withdrawReserve() internal returns (bool) {
-
-    }
-
     /// @dev Restricted to members of the admin role.
     modifier onlyAdmin(address account) {
         require(eController.isAdmin(account), "Restricted to admin.");

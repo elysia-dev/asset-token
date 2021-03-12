@@ -69,8 +69,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         _checkBalance(address(this), amount);
         _transfer(address(this), msg.sender, amount);
 
-        if (_checkReserveSurplus()) {
-            _depositReserve(_getReserveSurplus());
+        if (!_checkReserve()) {
+            _depositReserve(_getReserveSurplusOrDecifit());
         }
     }
 
@@ -164,6 +164,66 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             balanceOf(seller) >= amount,
             "AssetToken: Insufficient seller balance."
         );
+    }
+
+    /**
+     * @notice check reserves of asset token
+     * @return return true if the reserves for payment is sufficient
+     */
+    function _checkReserve()
+        internal
+        view
+        returns (bool)
+    {
+        AssetTokenLibrary.ReserveLocalVars memory vars =
+            AssetTokenLibrary.ReserveLocalVars({
+                price: price,
+                totalSupply: totalSupply(),
+                interestRate: interestRate,
+                cashReserveRatio: cashReserveRatio,
+                balanceOfAssetToken: balanceOf(address(this)),
+                contractBalance: address(this).balance
+            });
+        return (vars.checkReserve());
+    }
+
+    /**
+     * @notice get reserves of asset token
+     * @return return reserve surplus
+     */
+    function _getReserveSurplusOrDecifit()
+        internal
+        view
+        returns (uint256)
+    {
+        AssetTokenLibrary.ReserveLocalVars memory vars =
+            AssetTokenLibrary.ReserveLocalVars({
+                price: price,
+                totalSupply: totalSupply(),
+                interestRate: interestRate,
+                cashReserveRatio: cashReserveRatio,
+                balanceOfAssetToken: balanceOf(address(this)),
+                contractBalance: address(this).balance
+            });
+        return (vars.getReserveSurplusOrDeficit());
+    }
+
+    /**
+     * @notice deposit reserve into the controller
+     * @return return true if the reserves for payment is insufficient
+     */
+    function _depositReserve(uint256 reserveSurplus) internal returns (bool) {
+        emit ReserveDeposited(reserveSurplus);
+
+        return payable(address(eController)).send(reserveSurplus);
+    }
+
+    /**
+     * @notice withdraw reserve from the controller
+     * @return return true if the reserves for payment is insufficient
+     */
+    function withdrawReserve() internal returns (bool) {
+
     }
 
     /**

@@ -60,18 +60,19 @@ describe("AssetTokenEth", () => {
         context('reserve calculator', async () => {
             it('return false for insufficient reserve for payment', async () => {
                 await assetTokenEth.connect(account1).purchase({value: ethers.utils.parseEther("40")})
-                expect(await assetTokenEth.checkReserve()).to.be.false
+                expect(await assetTokenEth.checkReserveSurplus()).to.be.false
                 await assetTokenEth.connect(admin).withdrawToAdmin()
-                expect(await assetTokenEth.checkReserve()).to.be.true
+                expect(await assetTokenEth.checkReserveSurplus()).to.be.true
             })
         })
 
         context('send reserve', async () => {
             it('do not send reserve for insufficient reserve', async () => {
-                
+                await assetTokenEth.connect(account1).purchase({value: ethers.utils.parseEther("40")})
             })
 
-            it('send reserve and emit event', async () => {
+            it('send reserve and emit event for excess reserve', async () => {
+                
             })
         })
 
