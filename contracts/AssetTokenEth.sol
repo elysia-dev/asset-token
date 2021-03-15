@@ -213,12 +213,12 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * @notice deposit reserve into the controller
      */
     function _depositReserve(uint256 reserveSurplus) internal {
-        emit ReserveDeposited(reserveSurplus);
-
         require(
             payable(address(eController)).send(reserveSurplus),
             "Eth : send failed"
         );
+
+        emit ReserveDeposited(reserveSurplus);
     }
 
     /**

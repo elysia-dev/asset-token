@@ -6,6 +6,7 @@ import "./IAssetToken.sol";
 
 interface IEController {
     function isAdmin(address account) external view returns (bool);
+    function isAssetToken(address account) external view returns (bool);
 }
 
 /**
@@ -16,6 +17,11 @@ interface IEController {
 contract EController is IEController, AccessControl {
     // AssetToken list
     IAssetTokenBase[] public assetTokenList;
+
+    bytes32 public constant ASSETTOKEN = keccak256("ASSETTOKEN");
+
+    // 0: el, 1: eth, 2: wBTC ...
+    mapping(uint256 => IAssetTokenBase) public assetTokenPayment;
 
     /// @notice Emitted when new assetToken is set
     event NewAssetToken(address assetToken);
@@ -37,6 +43,7 @@ contract EController is IEController, AccessControl {
 
         for (uint256 i = 0; i < len; i++) {
             assetTokenList.push(assetTokens[i]);
+            grantRole(ASSETTOKEN, address(assetTokens[i]));
             emit NewAssetToken(address(assetTokens[i]));
         }
     }
@@ -60,6 +67,9 @@ contract EController is IEController, AccessControl {
         }
     }
 
+    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit) internal {
+    }
+
     function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens)
         public
         onlyAdmin
@@ -79,6 +89,21 @@ contract EController is IEController, AccessControl {
         _;
     }
 
+    /// @dev Restricted to members of the assetToken.
+    modifier onlyAssetToken() {
+        require(_isAssetToken(msg.sender), "Restricted to assetToken.");
+        _;
+    }
+
+    /// @dev Return `true` if the account is the assetToken
+    function isAssetToken(address account)
+        external
+        view
+        override
+        returns (bool) {
+        return _isAssetToken(account);
+    }
+
     /// @dev Return `true` if the account belongs to the admin role.
     function isAdmin(address account)
         external
@@ -86,6 +111,10 @@ contract EController is IEController, AccessControl {
         override
         returns (bool) {
         return _isAdmin(account);
+    }
+
+    function _isAssetToken(address account) internal view returns (bool) {
+        return hasRole(ASSETTOKEN, account);
     }
 
     function _isAdmin(address account) internal view returns (bool) {

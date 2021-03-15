@@ -74,6 +74,7 @@ describe("AssetTokenEth", () => {
             it('send reserve and emit event for excess reserve', async () => {
                 await expect(assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")}))
                 .to.emit(assetTokenEth, 'ReserveDeposited')
+                .withArgs(17.5)
                 expect(await provider.getBalance(assetTokenEth.address))
                 .to.be.equal(ethers.utils.parseEther("22.5"))
                 expect(await provider.getBalance(assetTokenEth.address))
