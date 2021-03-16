@@ -12,6 +12,8 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     using AssetTokenLibrary for AssetTokenLibrary.RewardLocalVars;
     using AssetTokenLibrary for AssetTokenLibrary.ReserveLocalVars;
 
+    address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     IEController public eController;
 
     uint256 public latitude;
@@ -28,8 +30,8 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     // Decimals: 18
     uint256 public rewardPerBlock;
 
-    // 0: el, 1: eth, 2: wBTC ...
-    uint256 public payment;
+    // payment currency address, 0xEeeeeEee... is ether
+    address public payment;
 
     // Account rewards
     // Decimals: 18
@@ -55,7 +57,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         uint256 amount_,
         uint256 price_,
         uint256 rewardPerBlock_,
-        uint256 payment_,
+        address payment_,
         uint256[] memory coordinate_,
         uint256 interestRate_,
         uint256 cashReserveRatio_,
@@ -94,7 +96,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         return price;
     }
 
-    function getPayment() external view override returns (uint256) {
+    function getPayment() external view override returns (address) {
         return payment;
     }
 

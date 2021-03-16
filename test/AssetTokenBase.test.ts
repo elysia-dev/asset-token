@@ -16,14 +16,12 @@ describe("AssetTokenBase", () => {
     const price_ = expandToDecimals(5, 15)
     // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
-    const payment_ = 0
-    const latitude_ = 123
-    const longitude_ = 456
-    const assetPrice_ = expandToDecimals(5, 21)
+    const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    const coordinate_ = [123, 456]
     const interestRate_ = expandToDecimals(1, 17)
+    const cashReserveRatio_ = expandToDecimals(5, 17)
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
-    const decimals_ = 18
 
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
@@ -42,13 +40,11 @@ describe("AssetTokenBase", () => {
                 price_,
                 rewardPerBlock_,
                 payment_,
-                latitude_,
-                longitude_,
-                assetPrice_,
+                coordinate_,
                 interestRate_,
+                cashReserveRatio_,
                 name_,
                 symbol_,
-                decimals_,
             ]
         ) as AssetTokenBaseTest;
     })
@@ -59,12 +55,12 @@ describe("AssetTokenBase", () => {
             expect(await assetTokenBaseTest.price()).to.equal(price_)
             expect(await assetTokenBaseTest.rewardPerBlock()).to.equal(rewardPerBlock_)
             expect(await assetTokenBaseTest.getPayment()).to.equal(payment_)
-            expect(await assetTokenBaseTest.latitude()).to.equal(latitude_)
-            expect(await assetTokenBaseTest.longitude()).to.equal(longitude_)
-            expect(await assetTokenBaseTest.assetPrice()).to.equal(assetPrice_)
+            expect(await assetTokenBaseTest.latitude()).to.equal(coordinate_[0])
+            expect(await assetTokenBaseTest.longitude()).to.equal(coordinate_[1])
+            expect(await assetTokenBaseTest.interestRate()).to.equal(interestRate_)
+            expect(await assetTokenBaseTest.cashReserveRatio()).to.equal(cashReserveRatio_)
             expect(await assetTokenBaseTest.name()).to.equal(name_)
             expect(await assetTokenBaseTest.symbol()).to.equal(symbol_)
-            expect(await assetTokenBaseTest.decimals()).to.equal(decimals_)
         })
     })
 

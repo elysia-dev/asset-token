@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./IAssetToken.sol";
 
 interface IEController {
@@ -15,13 +17,12 @@ interface IEController {
  * @author Elysia
  */
 contract EController is IEController, AccessControl {
-    // AssetToken list
-    IAssetTokenBase[] public assetTokenList;
+    using SafeERC20 for IERC20;
 
     bytes32 public constant ASSETTOKEN = keccak256("ASSETTOKEN");
 
-    // 0: el, 1: eth, 2: wBTC ...
-    mapping(uint256 => IAssetTokenBase) public assetTokenPayment;
+    // AssetToken list
+    IAssetTokenBase[] public assetTokenList;
 
     /// @notice Emitted when new assetToken is set
     event NewAssetToken(address assetToken);
@@ -67,7 +68,12 @@ contract EController is IEController, AccessControl {
         }
     }
 
-    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit) internal {
+    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
+        external
+        payable
+        onlyAssetToken
+    {
+        IERC20(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
     }
 
     function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens)

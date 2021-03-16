@@ -4,7 +4,7 @@ pragma solidity 0.8.2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract TestnetEL is ERC20 {
+contract TestnetERC20 is ERC20 {
 
     constructor(
         uint totalSupply_,

@@ -1,52 +1,49 @@
 import hardhat from 'hardhat';
-import assetTokenELArguments from "./deployArguments/AssetTokenEL";
+import assetTokenERC20Arguments from "./deployArguments/AssetTokenERC";
 import assetTokenEthArguments from "./deployArguments/AssetTokenEth";
-import testnetELArguements from "./deployArguments/TestnetEL";
+import testnetERC20Arguements from "./deployArguments/TestnetERC20";
 import { exec } from "child_process";
 
-let el = process.env.EL || '';
+let el = process.env.el || '';
 
 async function main() {
   console.log(`${hardhat.network.name} deploy start`);
 
   const EController = await hardhat.ethers.getContractFactory("EController");
-  const AssetTokenEL = await hardhat.ethers.getContractFactory("AssetTokenEL");
+  const AssetTokenERC20 = await hardhat.ethers.getContractFactory("AssetTokenERC20");
   const AssetTokenEth = await hardhat.ethers.getContractFactory("AssetTokenEth");
-  const TestnetEL = await hardhat.ethers.getContractFactory("TestnetEL")
+  const TestnetEl = await hardhat.ethers.getContractFactory("TestnetERC20")
 
   const controller = await EController.deploy();
   console.log("controller address:", controller.address);
 
   if (!el) {
-    const testnetEL = await TestnetEL.deploy(
-      testnetELArguements.totalSupply_,
-      testnetELArguements.name_,
-      testnetELArguements.symbol_,
-      testnetELArguements.decimals_
+    const testnetEl = await TestnetEl.deploy(
+      testnetERC20Arguements.totalSupply_,
+      testnetERC20Arguements.name_,
+      testnetERC20Arguements.symbol_,
+      testnetERC20Arguements.decimals_
     );
-    console.log("kovanEl address:", testnetEL.address);
-    el = testnetEL.address
+    console.log("kovanEl address:", testnetEl.address);
+    el = testnetEl.address
   }
 
-  assetTokenELArguments.eController_ = controller.address;
-  assetTokenELArguments.el_ = el;
+  assetTokenERC20Arguments.eController_ = controller.address;
   assetTokenEthArguments.eController_ = controller.address;
 
-  const assetTokenEL = await AssetTokenEL.deploy(
-    assetTokenELArguments.el_,
-    assetTokenELArguments.eController_,
-    assetTokenELArguments.amount_,
-    assetTokenELArguments.price_,
-    assetTokenELArguments.rewardPerBlock_,
-    assetTokenELArguments.payment_,
-    assetTokenELArguments.coordinate_,
-    assetTokenELArguments.interestRate_,
-    assetTokenELArguments.cashReserveRatio_,
-    assetTokenELArguments.name_,
-    assetTokenELArguments.symbol_,
-    assetTokenELArguments.decimals_
+  const assetTokenERC20 = await AssetTokenERC20.deploy(
+    assetTokenERC20Arguments.eController_,
+    assetTokenERC20Arguments.amount_,
+    assetTokenERC20Arguments.price_,
+    assetTokenERC20Arguments.rewardPerBlock_,
+    assetTokenERC20Arguments.payment_,
+    assetTokenERC20Arguments.coordinate_,
+    assetTokenERC20Arguments.interestRate_,
+    assetTokenERC20Arguments.cashReserveRatio_,
+    assetTokenERC20Arguments.name_,
+    assetTokenERC20Arguments.symbol_,
   );
-  console.log("assetTokenEL address", assetTokenEL.address);
+  console.log("assetTokenERC20 address", assetTokenERC20.address);
 
   const assetTokenEth = await AssetTokenEth.deploy(
     assetTokenEthArguments.eController_,
@@ -59,19 +56,18 @@ async function main() {
     assetTokenEthArguments.cashReserveRatio_,
     assetTokenEthArguments.name_,
     assetTokenEthArguments.symbol_,
-    assetTokenEthArguments.decimals_
   );
   console.log("assetTokenEth address", assetTokenEth.address);
 
   await controller.setAssetTokens([
-    assetTokenEL.address,
+    assetTokenERC20.address,
     assetTokenEth.address,
   ]);
 
   exec(`EL=${el}\
     CONTROLLER=${controller.address}\
     ASSET_TOKEN_ETH=${assetTokenEth.address}\
-    ASSET_TOKEN_EL=${assetTokenEL.address}\
+    ASSET_TOKEN_ERC20=${assetTokenERC20.address}\
     NETWORK=${hardhat.network.name}\
     yarn ts-node scripts/verify.ts`, (error, stdout, stderr) => {
     if (error) {
@@ -87,7 +83,7 @@ async function main() {
 }
 
 if (!['mainnet', 'kovan'].includes(hardhat.network.name)) {
-  console.log(`Network shoud be mainnet or kovan only. You select ${hardhat.network.name}`);
+  console.log(`Network shoud be mainnet or kovan only. You sERC20ect ${hardhat.network.name}`);
   process.exit(1);
 }
 

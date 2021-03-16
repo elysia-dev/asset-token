@@ -67,11 +67,15 @@ library AssetTokenLibrary {
         return self.spent * 1e18 / self.assetTokenPrice;
     }
 
+    /**
+     * @notice calculate reserve
+     * @return return true if reserve is sufficient.
+     */
     function checkReserve(ReserveLocalVars memory self)
         internal
         pure
         returns (bool) {
-        return (getReserve(self) * self.cashReserveRatio / 1e18 >= self.contractBalance);
+        return (getReserve(self) * self.cashReserveRatio / 1e18 <= self.contractBalance);
     }
 
     function getReserve(ReserveLocalVars memory self)
@@ -94,10 +98,8 @@ library AssetTokenLibrary {
         returns (uint256) {
 
         if (checkReserve(self)) {
-            return (getReserve(self) * self.cashReserveRatio / 1e18 - self.contractBalance);
+            return (self.contractBalance - getReserve(self) * self.cashReserveRatio / 1e18);
         }
-        return (self.contractBalance - getReserve(self) * self.cashReserveRatio / 1e18);
+        return (getReserve(self) * self.cashReserveRatio / 1e18 - self.contractBalance);
     }
-
-
 }

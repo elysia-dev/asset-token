@@ -19,7 +19,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         uint256 amount_,
         uint256 price_,
         uint256 rewardPerBlock_,
-        uint256 payment_,
+        address payment_,
         uint256[] memory coordinate_,
         uint256 interestRate_,
         uint256 cashReserveRatio_,
@@ -70,7 +70,9 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         _checkBalance(address(this), amount);
         _transfer(address(this), msg.sender, amount);
 
-        if (!_checkReserve()) {
+        if (_checkReserve()) {
+            console.log("checkReserve", _checkReserve());
+            console.log("getReserveSurplus", _getReserveSurplusOrDecifit());
             _depositReserve(_getReserveSurplusOrDecifit());
         }
     }

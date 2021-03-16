@@ -12,7 +12,7 @@ interface IAssetTokenBase {
     function getAssetPrice() external view returns (uint256);
     function getInterestRate() external view returns (uint256);
     function getPrice() external view returns (uint256);
-    function getPayment() external view returns (uint256);
+    function getPayment() external view returns (address);
 }
 
 interface IAssetTokenERC20 {

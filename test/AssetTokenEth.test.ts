@@ -16,7 +16,7 @@ describe("AssetTokenEth", () => {
     const price_ = expandToDecimals(5, 15)
     // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
-    const payment_ = 1
+    const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     const coordinate_ = [123, 456]
     const interestRate_ = expandToDecimals(1, 17)
     const cashReserveRatio_ = expandToDecimals(5, 17)
@@ -57,10 +57,6 @@ describe("AssetTokenEth", () => {
     })
 
     describe(".reserve requirement system", async () => {
-        beforeEach(async () => {
-            await admin.sendTransaction({value: ethers.utils.parseEther("1"), to: assetTokenEth.address})
-        })
-
         context('reserve calculator', async () => {
             it('return false for insufficient reserve for payment', async () => {
             })
@@ -69,20 +65,23 @@ describe("AssetTokenEth", () => {
         context('send reserve', async () => {
             it('do not send reserve for insufficient reserve', async () => {
                 await assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")})
+                console.log((await provider.getBalance(assetTokenEth.address)).toString())
+                console.log((await provider.getBalance(account1.address)).toString())
+                console.log(await (await assetTokenEth.balanceOf(account1.address)).toString())
             })
 
             it('send reserve and emit event for excess reserve', async () => {
                 await expect(assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")}))
-                .to.emit(assetTokenEth, 'ReserveDeposited')
-                .withArgs(17.5)
+                    .to.emit(assetTokenEth, 'ReserveDeposited')
+                    .withArgs(17.5)
                 expect(await provider.getBalance(assetTokenEth.address))
-                .to.be.equal(ethers.utils.parseEther("22.5"))
-                expect(await provider.getBalance(assetTokenEth.address))
+                    .to.be.equal(ethers.utils.parseEther("22.5"))
             })
         })
 
         context('request for payment', async () => {
             it('do not send request for sufficient reserve', async () => {
+                
             })
 
             it('send request for insufficient reserve for payment', async () => {

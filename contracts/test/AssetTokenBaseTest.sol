@@ -9,7 +9,7 @@ contract AssetTokenBaseTest is AssetTokenBase {
         uint256 amount_,
         uint256 price_,
         uint256 rewardPerBlock_,
-        uint256 payment_,
+        address payment_,
         uint256[] memory coordinate_,
         uint256 interestRate_,
         uint256 cashReserveRatio_,
