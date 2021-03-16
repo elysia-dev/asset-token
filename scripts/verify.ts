@@ -7,7 +7,7 @@ const controller = process.env.CONTROLLER;
 const network = process.env.NETWORK;
 
 // Verify EL Token
-exec(`yarn hardhat verify --network ${network} --constructor-args scripts/verifyArguments/testnetELVerify.js ${el}`, (error, stdout, stderr) => {
+exec(`yarn hardhat verify --network ${network} --contract contracts/test/TestnetEL.sol:TestnetEL --constructor-args scripts/verifyArguments/testnetELVerify.js ${el}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;
@@ -33,7 +33,7 @@ exec(`yarn hardhat verify --network ${network} ${controller}`, (error, stdout, s
 });
 
 // Verify AssetTokenEl
-exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network ${network} --constructor-args scripts/verifyArguments/AssetTokenELVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
+exec(`CONTROLLER=${controller} EL=${el} yarn hardhat verify --network ${network} --constructor-args scripts/verifyArguments/AssetTokenERCVerify.js ${assetTokenEl}`, (error, stdout, stderr) => {
   if (error) {
     console.log(`error: ${error.message}`);
     return;

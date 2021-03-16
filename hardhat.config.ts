@@ -39,9 +39,21 @@ const config: HardhatUserConfig = {
       accounts: [process.env.ADMIN || ''],
       chainId: 42,
     },
+    binanceTestnet: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      chainId: 97,
+      gasPrice: 20000000000,
+      accounts: [process.env.BINANCE_ADMIN || ''],
+    },
+    binanceMainnet: {
+      url: "https://bsc-dataseed.binance.org/",
+      chainId: 56,
+      gasPrice: 20000000000,
+      accounts: [process.env.BINANCE_ADMIN || ''],
+    }
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: process.env.BSCSCAN_API_KEY
   },
   paths: {
     sources: "./contracts",

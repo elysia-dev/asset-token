@@ -81,7 +81,7 @@ describe("AssetTokenEth", () => {
 
         context('request for payment', async () => {
             it('do not send request for sufficient reserve', async () => {
-                
+
             })
 
             it('send request for insufficient reserve for payment', async () => {

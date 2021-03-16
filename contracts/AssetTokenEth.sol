@@ -72,9 +72,10 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
         if (_checkReserve()) {
             console.log("checkReserve", _checkReserve());
-            console.log("getReserveSurplus", _getReserveSurplusOrDecifit());
-            _depositReserve(_getReserveSurplusOrDecifit());
+            console.log("getReserveSurplus", _getReserveSurplusOrDeficit(0));
+            _depositReserve(_getReserveSurplusOrDeficit(0));
         }
+        console.log("contract ether balance", address(this).balance);
     }
 
     /**
@@ -92,6 +93,12 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         whenNotPaused
     {
         _checkBalance(msg.sender, amount);
+
+        if (!_checkReserve()) {
+            console.log("checkReserve", _checkReserve());
+            console.log("getReserveSurplus", _getReserveSurplusOrDeficit(0));
+            _withdrawReserve(_getReserveSurplusOrDeficit(0));
+        }
 
         AssetTokenLibrary.SpentLocalVars memory vars =
             AssetTokenLibrary.SpentLocalVars({
@@ -192,20 +199,23 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
     /**
      * @notice get reserves of asset token
-     * @return return reserve surplus
+     * @return return reserve surplus or deficit
      */
-    function _getReserveSurplusOrDecifit()
+
+    function _getReserveSurplusOrDeficit(uint256 amount)
         internal
         view
         returns (uint256)
     {
+        uint256 balanceOfAssetToken = balanceOf(address(this)) + amount;
+
         AssetTokenLibrary.ReserveLocalVars memory vars =
             AssetTokenLibrary.ReserveLocalVars({
                 price: price,
                 totalSupply: totalSupply(),
                 interestRate: interestRate,
                 cashReserveRatio: cashReserveRatio,
-                balanceOfAssetToken: balanceOf(address(this)),
+                balanceOfAssetToken: balanceOfAssetToken,
                 contractBalance: address(this).balance
             });
         return (vars.getReserveSurplusOrDeficit());
@@ -225,10 +235,12 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
     /**
      * @notice withdraw reserve from the controller
-     * @return return true if the reserves for payment is insufficient
      */
-    function withdrawReserve() internal returns (bool) {
-
+    function _withdrawReserve(uint256 reserveDeficit) internal {
+        require(
+            eController.withdrawReserveFromAssetTokenEth(reserveDeficit),
+            "withdraw failed"
+        );
     }
 
     /**

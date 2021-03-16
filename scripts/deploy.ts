@@ -1,7 +1,7 @@
 import hardhat from 'hardhat';
 import assetTokenERC20Arguments from "./deployArguments/AssetTokenERC";
 import assetTokenEthArguments from "./deployArguments/AssetTokenEth";
-import testnetERC20Arguements from "./deployArguments/TestnetERC20";
+import testnetERC20Arguements from "./deployArguments/testnetEL";
 import { exec } from "child_process";
 
 let el = process.env.el || '';
@@ -10,9 +10,9 @@ async function main() {
   console.log(`${hardhat.network.name} deploy start`);
 
   const EController = await hardhat.ethers.getContractFactory("EController");
-  const AssetTokenERC20 = await hardhat.ethers.getContractFactory("AssetTokenERC20");
+  const AssetTokenERC20 = await hardhat.ethers.getContractFactory("AssetTokenERC");
   const AssetTokenEth = await hardhat.ethers.getContractFactory("AssetTokenEth");
-  const TestnetEl = await hardhat.ethers.getContractFactory("TestnetERC20")
+  const TestnetEl = await hardhat.ethers.getContractFactory("TestnetEL")
 
   const controller = await EController.deploy();
   console.log("controller address:", controller.address);
@@ -22,7 +22,6 @@ async function main() {
       testnetERC20Arguements.totalSupply_,
       testnetERC20Arguements.name_,
       testnetERC20Arguements.symbol_,
-      testnetERC20Arguements.decimals_
     );
     console.log("kovanEl address:", testnetEl.address);
     el = testnetEl.address
@@ -82,7 +81,7 @@ async function main() {
   });
 }
 
-if (!['mainnet', 'kovan'].includes(hardhat.network.name)) {
+if (!['mainnet', 'kovan', 'binanceTestnet', 'binanceMainnet'].includes(hardhat.network.name)) {
   console.log(`Network shoud be mainnet or kovan only. You sERC20ect ${hardhat.network.name}`);
   process.exit(1);
 }

@@ -9,6 +9,7 @@ import "./IAssetToken.sol";
 interface IEController {
     function isAdmin(address account) external view returns (bool);
     function isAssetToken(address account) external view returns (bool);
+    function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit) external payable returns (bool);
 }
 
 /**
@@ -68,9 +69,22 @@ contract EController is IEController, AccessControl {
         }
     }
 
-    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
+    function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit)
         external
         payable
+        override
+        onlyAssetToken
+        returns (bool)
+    {
+        require(
+            payable(msg.sender).send(reserveDeficit),
+            "Eth : send failed"
+        );
+        return true;
+    }
+
+    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
+        external
         onlyAssetToken
     {
         IERC20(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);

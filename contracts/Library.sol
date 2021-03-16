@@ -89,7 +89,8 @@ library AssetTokenLibrary {
                         / 1e18
                         + self.totalSupply
                         - self.balanceOfAssetToken
-                    ) / 1e18;
+                    ) / 1e18
+                    * self.cashReserveRatio / 1e18;
     }
 
     function getReserveSurplusOrDeficit(ReserveLocalVars memory self)
@@ -98,8 +99,8 @@ library AssetTokenLibrary {
         returns (uint256) {
 
         if (checkReserve(self)) {
-            return (self.contractBalance - getReserve(self) * self.cashReserveRatio / 1e18);
+            return (self.contractBalance - getReserve(self));
         }
-        return (getReserve(self) * self.cashReserveRatio / 1e18 - self.contractBalance);
+        return (getReserve(self) - self.contractBalance);
     }
 }
