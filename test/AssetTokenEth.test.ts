@@ -57,34 +57,24 @@ describe("AssetTokenEth", () => {
     })
 
     describe(".reserve requirement system", async () => {
-        context('reserve calculator', async () => {
-            it('return false for insufficient reserve for payment', async () => {
-            })
-        })
-
         context('send reserve', async () => {
-            it('do not send reserve for insufficient reserve', async () => {
-                await assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")})
-                console.log((await provider.getBalance(assetTokenEth.address)).toString())
-                console.log((await provider.getBalance(account1.address)).toString())
-                console.log(await (await assetTokenEth.balanceOf(account1.address)).toString())
-            })
-
             it('send reserve and emit event for excess reserve', async () => {
                 await expect(assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")}))
                     .to.emit(assetTokenEth, 'ReserveDeposited')
-                    .withArgs(17.5)
+                    .withArgs(ethers.utils.parseEther("40"))
                 expect(await provider.getBalance(assetTokenEth.address))
-                    .to.be.equal(ethers.utils.parseEther("22.5"))
+                    .to.be.equal(ethers.utils.parseEther("0"))
+                expect(await provider.getBalance(eController.address))
+                    .to.be.equal(ethers.utils.parseEther("40"))
             })
         })
 
         context('request for payment', async () => {
-            it('do not send request for sufficient reserve', async () => {
-
-            })
-
-            it('send request for insufficient reserve for payment', async () => {
+            xit('send request for insufficient reserve for payment', async () => {
+                assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")})
+                await expect(assetTokenEth.connect(account1).refund(expandToDecimals(4000, 18)))
+                    .to.emit(assetTokenEth, 'ReserveWithdrawed')
+                    .withArgs(ethers.utils.parseEther("20"))
             })
         })
 
@@ -99,13 +89,13 @@ describe("AssetTokenEth", () => {
         })
     })
 
-    xdescribe(".purchase", async () => {
+    describe(".purchase", async () => {
         it('if account has sufficient allowed eth balance, can purchase token', async () => {
-            const beforeBalance = await provider.getBalance(assetTokenEth.address)
+            const beforeBalance = await provider.getBalance(eController.address)
             expect(await assetTokenEth.connect(account1).purchase(options))
                 .to.changeEtherBalance(account1, ethers.utils.parseEther("-0.1"))
             // cannot use changeEtherBalnce in contract.address
-            const afterBalance = await provider.getBalance(assetTokenEth.address)
+            const afterBalance = await provider.getBalance(eController.address)
             expect(await assetTokenEth.balanceOf(account1.address))
                 .to.be.equal(expandToDecimals(20, 18));
             expect(await assetTokenEth.balanceOf(assetTokenEth.address))
@@ -121,7 +111,7 @@ describe("AssetTokenEth", () => {
         })
     })
 
-    xdescribe(".refund", async () => {
+    describe(".refund", async () => {
         it('if account and contract has sufficient balance, refund token', async () => {
             await assetTokenEth.connect(account1).purchase(options)
             expect(await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
@@ -130,18 +120,9 @@ describe("AssetTokenEth", () => {
             expect(
                 await assetTokenEth.balanceOf(assetTokenEth.address)
             ).to.be.equal(amount_.sub(expandToDecimals(10, 18)));
-            expect(await provider.getBalance(assetTokenEth.address)).to.eq(
+            expect(await provider.getBalance(eController.address)).to.eq(
                 ethers.utils.parseEther("0.05")
             )
-        })
-
-        it('if contract has not sufficient balance, transfer is failed', async () => {
-            await assetTokenEth.connect(account1).purchase(options)
-            await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18))
-            await assetTokenEth.connect(admin).withdrawToAdmin()
-
-            await expect(assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
-                .to.be.revertedWith('AssetToken: Insufficient buyer balance.')
         })
 
         it('if account does not have sufficient allowed balance, transfer is failed', async () => {
@@ -163,7 +144,7 @@ describe("AssetTokenEth", () => {
         })
     })
 
-    xdescribe('Asset token Pausable', async () => {
+    describe('Asset token Pausable', async () => {
         it('Admin can pause asset token', async () => {
             await expect(assetTokenEth.connect(admin).pause())
                 .to.emit(assetTokenEth, 'Paused')
@@ -188,7 +169,7 @@ describe("AssetTokenEth", () => {
     // Uncaught RuntimeError: abort(AssertionError:
     // Expected "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" to change balance by 0 wei, but it has changed by 1500000000 wei).
     // Build with -s ASSERTIONS=1 for more info.
-    xdescribe('.claimReward', async () => {
+    describe('.claimReward', async () => {
         let firstBlock: number;
         let secondBlock: number;
         let thirdBlock: number;
@@ -199,7 +180,7 @@ describe("AssetTokenEth", () => {
             thirdBlock = (await (await assetTokenEth.connect(account1).transfer(account2.address, expandToDecimals(10, 18))).wait()).blockNumber;
         })
 
-        it('if contract has not sufficient balance, transfer is failed', async () => {
+        xit('if eController contract has not sufficient balance, transfer is failed', async () => {
             await assetTokenEth.connect(admin).withdrawToAdmin()
 
             await expect(assetTokenEth.connect(account1).claimReward())
@@ -214,7 +195,7 @@ describe("AssetTokenEth", () => {
                         (10 * (thirdBlock - secondBlock))
                     ), 18))
                 .div(amount_)
-                .div(expandToDecimals(1000, 18))
+                .mul(await assetTokenEth.balanceOf(account1.address))
             expect(await assetTokenEth.connect(account1).claimReward())
                 .to.changeEtherBalance(account1, expectedReward)
         })

@@ -70,12 +70,11 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         _checkBalance(address(this), amount);
         _transfer(address(this), msg.sender, amount);
 
-        if (_checkReserve()) {
-            console.log("checkReserve", _checkReserve());
-            console.log("getReserveSurplus", _getReserveSurplusOrDeficit(0));
-            _depositReserve(_getReserveSurplusOrDeficit(0));
-        }
-        console.log("contract ether balance", address(this).balance);
+        console.log("contract ether balance before purchase", address(this).balance);
+
+        _depositReserve(msg.value);
+
+        console.log("contract ether balance after purchase", address(this).balance);
     }
 
     /**
@@ -94,12 +93,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {
         _checkBalance(msg.sender, amount);
 
-        if (!_checkReserve()) {
-            console.log("checkReserve", _checkReserve());
-            console.log("getReserveSurplus", _getReserveSurplusOrDeficit(0));
-            _withdrawReserve(_getReserveSurplusOrDeficit(0));
-        }
-
         AssetTokenLibrary.SpentLocalVars memory vars =
             AssetTokenLibrary.SpentLocalVars({
                 amount: amount,
@@ -107,6 +100,12 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             });
 
         uint256 spent = vars.getSpent();
+
+        console.log("contract ether balance before refund", address(this).balance);
+
+         _withdrawReserve(spent);
+
+        console.log("contract ether balance after refund", address(this).balance);
 
         require(
             address(this).balance >= spent,
@@ -137,6 +136,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         whenNotPaused
     {
         uint256 reward = getReward(msg.sender);
+
+         _withdrawReserve(reward);
 
         require(
             reward <= address(this).balance,
@@ -241,6 +242,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             eController.withdrawReserveFromAssetTokenEth(reserveDeficit),
             "withdraw failed"
         );
+
+        emit ReserveWithdrawed(reserveDeficit);
     }
 
     /**

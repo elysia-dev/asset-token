@@ -43,6 +43,9 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     /// @notice Emitted when reserve deposited
     event ReserveDeposited(uint256 reserveSurplus);
 
+    /// @notice Emitted when reserve deposited
+    event ReserveWithdrawed(uint256 reserveDeficit);
+
     /// @notice Emitted when rewards per block is changed
     event NewRewardPerBlock(uint256 newRewardPerBlock);
 
