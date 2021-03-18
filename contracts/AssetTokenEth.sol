@@ -12,7 +12,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     /// @notice Emitted when an user claimed reward
     event RewardClaimed(address account, uint256 reward);
 
-    constructor(
+    function initialize(
         IEController eController_,
         uint256 amount_,
         uint256 price_,
@@ -23,8 +23,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         uint256 cashReserveRatio_,
         string memory name_,
         string memory symbol_
-    )
-        AssetTokenBase(
+    ) public initializer {
+        __AssetTokenBase_init(
             eController_,
             amount_,
             price_,
@@ -35,8 +35,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             cashReserveRatio_,
             name_,
             symbol_
-        )
-    {}
+        );
+    }
 
     /**
      * @dev purchase asset token with eth.
@@ -130,12 +130,13 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             reward <= address(this).balance,
             "AssetToken: Insufficient contract balance."
         );
+        
+        _clearReward(msg.sender);
 
         if (!payable(msg.sender).send(reward)) {
             _saveReward(msg.sender);
         }
 
-        _clearReward(msg.sender);
 
         emit RewardClaimed(msg.sender, reward);
     }

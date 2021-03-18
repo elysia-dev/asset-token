@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-import "../AssetTokenBase.sol";
+import "../AssetTokenEth.sol";
 
-contract AssetTokenBaseTest is AssetTokenBase {
+contract AssetTokenEthTest is AssetTokenEth {
     constructor(
         IEController eController_,
         uint256 amount_,
@@ -17,7 +17,7 @@ contract AssetTokenBaseTest is AssetTokenBase {
         string memory symbol_
     )
     {
-        __AssetTokenBase_init(
+        initialize(
             eController_,
             amount_,
             price_,
@@ -29,14 +29,5 @@ contract AssetTokenBaseTest is AssetTokenBase {
             name_,
             symbol_
         );
-        _transfer(address(this), msg.sender, amount_/2);
-    }
-
-    function saveReward(address account) external returns (bool) {
-        return _saveReward(account);
-    }
-
-    function clearReward(address account) external returns (bool) {
-        return _clearReward(account);
     }
 }

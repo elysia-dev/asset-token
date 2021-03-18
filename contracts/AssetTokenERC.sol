@@ -1,22 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
     using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
     using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
-    using AssetTokenLibrary for AssetTokenLibrary.ReserveLocalVars;
     using SafeERC20 for IERC20;
 
     /// @notice Emitted when an user claimed reward
     event RewardClaimed(address account, uint256 reward);
 
-    constructor(
+    function initialize(
         IEController eController_,
         uint256 amount_,
         uint256 price_,
@@ -27,8 +25,8 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
         uint256 cashReserveRatio_,
         string memory name_,
         string memory symbol_
-    )
-        AssetTokenBase(
+    ) public initializer {
+        __AssetTokenBase_init(
             eController_,
             amount_,
             price_,
@@ -39,8 +37,8 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
             cashReserveRatio_,
             name_,
             symbol_
-        )
-    {}
+        );
+    }
 
     /**
      * @dev purchase asset token with ERC20.

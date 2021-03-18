@@ -1,14 +1,14 @@
 import { expect } from "chai";
 import { ethers, waffle } from "hardhat";
 import { EController } from "../typechain/EController";
-import { AssetTokenEth } from "../typechain/AssetTokenEth"
+import { AssetTokenEthTest } from "../typechain/AssetTokenEthTest"
 import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
-import AssetTokenEthArtifact from "../artifacts/contracts/AssetTokenEth.sol/AssetTokenEth.json"
+import AssetTokenEthArtifact from "../artifacts/contracts/test/AssetTokenEthTest.sol/AssetTokenEthTest.json"
 
 describe("AssetTokenEth", () => {
-    let assetTokenEth: AssetTokenEth;
+    let assetTokenEth: AssetTokenEthTest;
     let eController: EController;
 
     const amount_ = expandToDecimals(10000, 18)
@@ -51,7 +51,7 @@ describe("AssetTokenEth", () => {
                 name_,
                 symbol_,
             ],
-        ) as AssetTokenEth
+        ) as AssetTokenEthTest
         await eController.connect(admin)
             .setAssetTokens([assetTokenEth.address])
     })

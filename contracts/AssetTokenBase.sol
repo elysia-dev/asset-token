@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./IAssetToken.sol";
 import "./EController.sol";
 import "./Library.sol";
 
-contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
+contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeable {
     using AssetTokenLibrary for AssetTokenLibrary.RewardLocalVars;
     using AssetTokenLibrary for AssetTokenLibrary.ReserveLocalVars;
 
@@ -19,7 +18,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
 
     uint256 public latitude;
     uint256 public longitude;
-    uint256 public assetPrice;
     uint256 public interestRate;
     uint256 public cashReserveRatio;
 
@@ -56,7 +54,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     /// @notice Emitted when cashReserveRatio is set
     event NewCashReserveRatio(uint256 newCashReserveRatio);
 
-    constructor(
+    function __AssetTokenBase_init(
         IEController eController_,
         uint256 amount_,
         uint256 price_,
@@ -67,15 +65,17 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         uint256 cashReserveRatio_,
         string memory name_,
         string memory symbol_
-    ) ERC20(name_, symbol_) {
+    ) public initializer {
         eController = eController_;
         price = price_;
-        payment = payment_;
-        interestRate = interestRate_;
-        _setCoordinate(coordinate_[0], coordinate_[1]);
         _setRewardPerBlock(rewardPerBlock_);
+        payment = payment_;
+        _setCoordinate(coordinate_[0], coordinate_[1]);
+        interestRate = interestRate_;
         _setCashReserveRatio(cashReserveRatio_);
         _mint(address(this), amount_);
+        __ERC20_init(name_, symbol_);
+        __Pausable_init();
     }
 
     /*** View functions ***/
@@ -89,7 +89,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     }
 
     function getAssetPrice() external view override returns (uint256) {
-        return assetPrice;
     }
 
     function getInterestRate() external view override returns (uint256) {
