@@ -5,6 +5,8 @@ import { AssetTokenBase } from "../typechain/AssetTokenBase"
 import makeAssetTokenBase from "./utils/makeAssetTokenBase";
 import { deployContract } from "ethereum-waffle";
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
+import { ethers } from "ethers";
+import expandToDecimals from "./utils/expandToDecimals";
 
 describe("Controller", () => {
     let eController: EController;
@@ -26,7 +28,7 @@ describe("Controller", () => {
             assetTokenBase = await makeAssetTokenBase
                 ({
                     from: admin,
-                    eController_: eController.address
+                    eController_: eController.address,
                 })
         })
 
@@ -54,5 +56,17 @@ describe("Controller", () => {
                 .to.emit(assetTokenBase, "Unpaused")
             expect(await assetTokenBase.paused()).to.be.false
         });
+
+        describe("./reserve", async () => {
+            beforeEach(async () => {
+                await account1.sendTransaction({to: assetTokenBase.address, value: ethers.utils.parseEther("10")})
+            })
+
+            it("General account cannot withdraw reserve from eController", async () => {
+                await expect(eController.connect(account1).withdrawReserveFromAssetTokenEth(expandToDecimals(1, 18)))
+                    .to.be.revertedWith("Restricted to assetToken.")
+            })
+        })
+
     })
 });

@@ -4,6 +4,7 @@ pragma solidity 0.8.2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./IAssetToken.sol";
 import "./EController.sol";
 import "./Library.sol";
@@ -30,7 +31,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
     // Decimals: 18
     uint256 public rewardPerBlock;
 
-    // payment currency address, 0xEeeeeEee... is ether
+    // currency payment address, 0xEeeeeEee... is ether
     address public payment;
 
     // Account rewards
@@ -183,7 +184,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         address from,
         address to,
         uint256 amount
-    ) internal virtual override {
+    ) internal override {
         super._beforeTokenTransfer(from, to, amount);
 
         /* RewardManager */
@@ -209,9 +210,26 @@ contract AssetTokenBase is IAssetTokenBase, ERC20, Pausable {
         return true;
     }
 
+    /**
+     * @notice deposit reserve in the controller
+     */
+    function _depositReserve(uint256 reserveSurplus) internal virtual {}
+
+    /**
+     * @notice withdraw reserve from the controller
+     */
+    function _withdrawReserve(uint256 reserveDeficit) internal virtual {}
+
     /// @dev Restricted to members of the admin role.
     modifier onlyAdmin(address account) {
         require(eController.isAdmin(account), "Restricted to admin.");
         _;
+    }
+
+    /**
+     * @dev allow asset token to receive eth from other accounts.
+     * Monthly rent profit (eth) is acummulated in asset token from elysia admin account
+     */
+    receive() external payable {
     }
 }

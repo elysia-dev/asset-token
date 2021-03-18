@@ -1,37 +1,33 @@
 import { AssetTokenBase } from "../../typechain/AssetTokenBase"
 import AssetTokenBaseArtifact from "../../artifacts/contracts/AssetTokenBase.sol/AssetTokenBase.json"
-import { BigNumber, Wallet } from "ethers";
+import { BigNumber, Contract, Wallet } from "ethers";
 import { deployContract } from "ethereum-waffle";
 import expandToDecimals from "./expandToDecimals";
 
 async function makeAssetTokenBase({
     from,
-    eController_ = "", //아직 eController가 없어요
+    eController_ = "",
     amount_ = 10000,
     price_ = expandToDecimals(5, 18),
-    rewardPerBlock_ = expandToDecimals(5, 14),
-    payment_ = 0,
-    latitude_ = 123,
-    longitude_ = 456,
-    assetPrice_ = expandToDecimals(5, 21),
+    rewardPerBlock_ = expandToDecimals(237, 6),
+    payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    coordinate_ = [expandToDecimals(123, 0), expandToDecimals(456, 0)],
     interestRate_ = expandToDecimals(1, 17),
+    cashReserveRatio_ = expandToDecimals(5, 17),
     name_ = "ExampleAsset",
     symbol_ = "EA",
-    decimals_ = 0
 }: {
     from: Wallet
-    eController_?: string
+    eController_: string
     amount_?: number
     price_?: BigNumber
     rewardPerBlock_?: BigNumber
-    payment_?: number
-    latitude_?: number
-    longitude_?: number,
-    assetPrice_?: BigNumber,
+    payment_?: string,
+    coordinate_?: Array<BigNumber>,
     interestRate_?: BigNumber,
+    cashReserveRatio_?: BigNumber,
     name_?: string,
     symbol_?: string
-    decimals_?: number
 }): Promise<AssetTokenBase> {
 
     let assetTokenBase: AssetTokenBase;
@@ -45,13 +41,11 @@ async function makeAssetTokenBase({
             price_,
             rewardPerBlock_,
             payment_,
-            latitude_,
-            longitude_,
-            assetPrice_,
+            coordinate_,
             interestRate_,
+            cashReserveRatio_,
             name_,
             symbol_,
-            decimals_,
         ]
     )) as AssetTokenBase
 
