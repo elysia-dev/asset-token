@@ -1,8 +1,9 @@
 import "dotenv/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-solhint"
-import "@nomiclabs/hardhat-etherscan"
+import "@nomiclabs/hardhat-solhint";
+import "@nomiclabs/hardhat-etherscan";
+import "@openzeppelin/hardhat-upgrades";
 import "hardhat-typechain";
 // import "solidity-coverage"
 // Gas-reporter's parser dependency makes Warning:

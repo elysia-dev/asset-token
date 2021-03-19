@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./IAssetToken.sol";
 
 interface IEController {
@@ -20,7 +20,7 @@ interface IEController {
  * @author Elysia
  */
 contract EController is IEController, AccessControlUpgradeable {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     bytes32 public constant ASSETTOKEN = keccak256("ASSETTOKEN");
 
@@ -79,7 +79,7 @@ contract EController is IEController, AccessControlUpgradeable {
         onlyAssetToken
         returns (bool)
     {
-        Address.sendValue(payable(msg.sender), reserveDeficit);
+        AddressUpgradeable.sendValue(payable(msg.sender), reserveDeficit);
         return true;
     }
 
@@ -89,7 +89,7 @@ contract EController is IEController, AccessControlUpgradeable {
         onlyAssetToken
         returns (bool)
     {
-        IERC20(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
+        IERC20Upgradeable(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
         return true;
     }
 

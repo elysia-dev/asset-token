@@ -101,7 +101,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
         _transfer(msg.sender, address(this), amount);
 
-        Address.sendValue(payable(msg.sender), spent);
+        AddressUpgradeable.sendValue(payable(msg.sender), spent);
     }
 
     /**
@@ -141,7 +141,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * @dev Withdraw all remaining eth from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
-        require(payable(msg.sender).send(address(this).balance), "Admin withdraw failed");
+        AddressUpgradeable.sendValue(payable(msg.sender), address(this).balance);
     }
 
     /**
@@ -166,7 +166,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
      * @notice deposit reserve in the controller
      */
     function _depositReserve(uint256 reserveSurplus) internal override {
-        Address.sendValue(payable(address(eController)), reserveSurplus);
+        AddressUpgradeable.sendValue(payable(address(eController)), reserveSurplus);
         emit ReserveDeposited(reserveSurplus);
     }
 
