@@ -9,7 +9,6 @@ interface IAssetTokenBase {
     function unpause() external;
     function getLatitude() external view returns (uint256);
     function getLongitude() external view returns (uint256);
-    function getAssetPrice() external view returns (uint256);
     function getInterestRate() external view returns (uint256);
     function getPrice() external view returns (uint256);
     function getPayment() external view returns (address);

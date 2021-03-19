@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { waffle } from "hardhat";
 import { EController } from "../typechain/EController";
-import { AssetTokenBase } from "../typechain/AssetTokenBase"
+import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
 import makeAssetTokenBase from "./utils/makeAssetTokenBase";
 import { deployContract } from "ethereum-waffle";
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
@@ -22,7 +22,7 @@ describe("Controller", () => {
     });
 
     context(".control asset token", async () => {
-        let assetTokenBase: AssetTokenBase;
+        let assetTokenBase: AssetTokenBaseTest;
 
         beforeEach(async () => {
             assetTokenBase = await makeAssetTokenBase

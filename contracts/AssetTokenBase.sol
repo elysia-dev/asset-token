@@ -39,6 +39,9 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
     // Account block numbers
     mapping(address => uint256) private _blockNumbers;
 
+    /// @notice Emitted when an user claimed reward
+    event RewardClaimed(address account, uint256 reward);
+
     /// @notice Emitted when reserve deposited
     event ReserveDeposited(uint256 reserveSurplus);
 
@@ -86,9 +89,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
 
     function getLongitude() external view override returns (uint256) {
         return longitude;
-    }
-
-    function getAssetPrice() external view override returns (uint256) {
     }
 
     function getInterestRate() external view override returns (uint256) {
@@ -158,6 +158,18 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
 
     /*** Reward functions ***/
 
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        super._beforeTokenTransfer(from, to, amount);
+
+        /* RewardManager */
+        _saveReward(from);
+        _saveReward(to);
+    }
+
     /**
      * @notice Get reward
      * @param account Addresss
@@ -179,18 +191,10 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         return vars.getReward();
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override {
-        super._beforeTokenTransfer(from, to, amount);
-
-        /* RewardManager */
-        _saveReward(from);
-        _saveReward(to);
-    }
-
+    /**
+     * @notice save reward
+     * @param account address for save reward
+     */
     function _saveReward(address account) internal returns (bool) {
         if (account == address(this)) {
             return true;
@@ -202,6 +206,10 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         return true;
     }
 
+    /**
+    * @notice clear reward when claim reward
+    * @param account address for clear reward
+     */
     function _clearReward(address account) internal returns (bool) {
         _rewards[account] = 0;
         _blockNumbers[account] = block.number;

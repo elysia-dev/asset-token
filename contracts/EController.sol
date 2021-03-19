@@ -3,13 +3,14 @@ pragma solidity 0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./IAssetToken.sol";
 
 interface IEController {
     function isAdmin(address account) external view returns (bool);
     function isAssetToken(address account) external view returns (bool);
+    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit) external returns (bool);
     function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit) external payable returns (bool);
 }
 
@@ -18,7 +19,7 @@ interface IEController {
  * @notice Controll admin
  * @author Elysia
  */
-contract EController is IEController, AccessControl {
+contract EController is IEController, AccessControlUpgradeable {
     using SafeERC20 for IERC20;
 
     bytes32 public constant ASSETTOKEN = keccak256("ASSETTOKEN");
@@ -29,7 +30,8 @@ contract EController is IEController, AccessControl {
     /// @notice Emitted when new assetToken is set
     event NewAssetToken(address assetToken);
 
-    constructor() {
+    function initialize() public initializer {
+        __AccessControl_init();
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, address(this));
     }
@@ -83,9 +85,12 @@ contract EController is IEController, AccessControl {
 
     function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
         external
+        override
         onlyAssetToken
+        returns (bool)
     {
         IERC20(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
+        return true;
     }
 
     function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens)

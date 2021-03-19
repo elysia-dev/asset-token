@@ -11,9 +11,6 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
     using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
     using SafeERC20 for IERC20;
 
-    /// @notice Emitted when an user claimed reward
-    event RewardClaimed(address account, uint256 reward);
-
     function initialize(
         IEController eController_,
         uint256 amount_,

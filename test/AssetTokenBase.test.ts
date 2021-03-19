@@ -1,15 +1,15 @@
 import { expect } from "chai";
 import { waffle } from "hardhat";
-import { EController } from "../typechain/EController";
+import { EControllerTest } from "../typechain/EControllerTest";
 import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
 import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import AssetTokenBaseTestArtifact from "../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
-import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
+import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 
 describe("AssetTokenBase", () => {
     let assetTokenBaseTest: AssetTokenBaseTest;
-    let eController: EController;
+    let eController: EControllerTest;
 
     const amount_ = expandToDecimals(10000, 18)
     // 0.005 ether per assetToken
@@ -30,7 +30,7 @@ describe("AssetTokenBase", () => {
         eController = await deployContract(
             admin,
             EControllerArtifact
-        ) as EController
+        ) as EControllerTest
         assetTokenBaseTest = await deployContract(
             admin,
             AssetTokenBaseTestArtifact,

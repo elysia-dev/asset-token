@@ -1,15 +1,15 @@
 import { expect } from "chai";
 import { ethers, waffle } from "hardhat";
-import { EController } from "../typechain/EController";
+import { EControllerTest } from "../typechain/EControllerTest";
 import { AssetTokenEthTest } from "../typechain/AssetTokenEthTest"
 import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
-import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
+import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 import AssetTokenEthArtifact from "../artifacts/contracts/test/AssetTokenEthTest.sol/AssetTokenEthTest.json"
 
 describe("AssetTokenEth", () => {
     let assetTokenEth: AssetTokenEthTest;
-    let eController: EController;
+    let eController: EControllerTest;
 
     const amount_ = expandToDecimals(10000, 18)
     // 0.005 ether = 1 assetToken
@@ -35,7 +35,7 @@ describe("AssetTokenEth", () => {
         eController = await deployContract(
             admin,
             EControllerArtifact
-        ) as EController
+        ) as EControllerTest
         assetTokenEth = await deployContract(
             admin,
             AssetTokenEthArtifact,
@@ -59,22 +59,22 @@ describe("AssetTokenEth", () => {
     describe(".reserve requirement system", async () => {
         context('send reserve', async () => {
             it('send reserve and emit event for excess reserve', async () => {
-                await expect(assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")}))
+                await expect(assetTokenEth.connect(account1).purchase(options))
                     .to.emit(assetTokenEth, 'ReserveDeposited')
-                    .withArgs(ethers.utils.parseEther("40"))
+                    .withArgs(ethers.utils.parseEther("0.1"))
                 expect(await provider.getBalance(assetTokenEth.address))
                     .to.be.equal(ethers.utils.parseEther("0"))
                 expect(await provider.getBalance(eController.address))
-                    .to.be.equal(ethers.utils.parseEther("40"))
+                    .to.be.equal(ethers.utils.parseEther("0.1"))
             })
         })
 
         context('request for payment', async () => {
-            xit('send request for insufficient reserve for payment', async () => {
-                assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("40")})
-                await expect(assetTokenEth.connect(account1).refund(expandToDecimals(4000, 18)))
+            it('send request for insufficient reserve for payment', async () => {
+                await assetTokenEth.connect(account1).purchase(options)
+                await expect(await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
                     .to.emit(assetTokenEth, 'ReserveWithdrawed')
-                    .withArgs(ethers.utils.parseEther("20"))
+                    .withArgs(ethers.utils.parseEther("0.05"))
             })
         })
 
@@ -108,6 +108,11 @@ describe("AssetTokenEth", () => {
         it('if msg.value does not have sufficient eth balance, transfer is failed', async () => {
             await expect(assetTokenEth.connect(account1).purchase())
                 .to.be.revertedWith('Not enough msg.value')
+        })
+
+        it('if msg.value exceed the value of remaining tokens, transaction revert in transfer', async () => {
+            await expect(assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("99")}))
+                .to.be.revertedWith('AssetToken: Insufficient seller balance.')
         })
     })
 

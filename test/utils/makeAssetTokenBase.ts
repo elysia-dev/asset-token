@@ -1,5 +1,5 @@
-import { AssetTokenBase } from "../../typechain/AssetTokenBase"
-import AssetTokenBaseArtifact from "../../artifacts/contracts/AssetTokenBase.sol/AssetTokenBase.json"
+import { AssetTokenBaseTest } from "../../typechain/AssetTokenBaseTest"
+import AssetTokenBaseArtifact from "../../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
 import { BigNumber, Contract, Wallet } from "ethers";
 import { deployContract } from "ethereum-waffle";
 import expandToDecimals from "./expandToDecimals";
@@ -28,9 +28,9 @@ async function makeAssetTokenBase({
     cashReserveRatio_?: BigNumber,
     name_?: string,
     symbol_?: string
-}): Promise<AssetTokenBase> {
+}): Promise<AssetTokenBaseTest> {
 
-    let assetTokenBase: AssetTokenBase;
+    let assetTokenBase: AssetTokenBaseTest;
 
     assetTokenBase = (await deployContract(
         from,
@@ -47,7 +47,7 @@ async function makeAssetTokenBase({
             name_,
             symbol_,
         ]
-    )) as AssetTokenBase
+    )) as AssetTokenBaseTest;
 
     return assetTokenBase;
 }

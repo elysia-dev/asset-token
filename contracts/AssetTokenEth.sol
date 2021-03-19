@@ -9,9 +9,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
     using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
 
-    /// @notice Emitted when an user claimed reward
-    event RewardClaimed(address account, uint256 reward);
-
     function initialize(
         IEController eController_,
         uint256 amount_,
@@ -130,19 +127,18 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             reward <= address(this).balance,
             "AssetToken: Insufficient contract balance."
         );
-        
+
         _clearReward(msg.sender);
 
         if (!payable(msg.sender).send(reward)) {
             _saveReward(msg.sender);
         }
 
-
         emit RewardClaimed(msg.sender, reward);
     }
 
     /**
-     * @dev Withdraw all eth from this contract to admin
+     * @dev Withdraw all remaining eth from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
         require(payable(msg.sender).send(address(this).balance), "Admin withdraw failed");
