@@ -36,6 +36,27 @@ contract EController is IEController, AccessControlUpgradeable {
         _setupRole(DEFAULT_ADMIN_ROLE, address(this));
     }
 
+    function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit)
+        external
+        payable
+        override
+        onlyAssetToken
+        returns (bool)
+    {
+        AddressUpgradeable.sendValue(payable(msg.sender), reserveDeficit);
+        return true;
+    }
+
+    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
+        external
+        override
+        onlyAssetToken
+        returns (bool)
+    {
+        IERC20Upgradeable(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
+        return true;
+    }
+
     /**
      * @notice Add assets to be included in eController
      * @param assetTokens The list of addresses of the assetTokens to be enabled
@@ -72,27 +93,6 @@ contract EController is IEController, AccessControlUpgradeable {
         }
     }
 
-    function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit)
-        external
-        payable
-        override
-        onlyAssetToken
-        returns (bool)
-    {
-        AddressUpgradeable.sendValue(payable(msg.sender), reserveDeficit);
-        return true;
-    }
-
-    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
-        external
-        override
-        onlyAssetToken
-        returns (bool)
-    {
-        IERC20Upgradeable(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
-        return true;
-    }
-
     function unpauseAssetTokens(IAssetTokenBase[] memory assetTokens)
         public
         onlyAdmin
@@ -102,6 +102,12 @@ contract EController is IEController, AccessControlUpgradeable {
         for (uint256 i = 0; i < len; i++) {
             assetTokens[i].unpause();
         }
+    }
+
+    function migrateEthReserve()
+        public
+        onlyAdmin {
+        AddressUpgradeable.sendValue(payable(msg.sender), address(this).balance);
     }
 
     /*** Access Controllers ***/

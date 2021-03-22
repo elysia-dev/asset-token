@@ -14,8 +14,8 @@ async function main() {
   const AssetTokenEth = await hardhat.ethers.getContractFactory("AssetTokenEth");
   const TestnetEl = await hardhat.ethers.getContractFactory("TestnetEL")
 
-  const controller = await EController.deploy();
-  console.log("controller address:", controller.address);
+  const controller = await hardhat.upgrades.deployProxy(EController, { initializer: 'initialize' })
+  console.log("controller proxy address:", controller.address);
 
   if (!el) {
     const testnetEl = await TestnetEl.deploy(
@@ -30,7 +30,7 @@ async function main() {
   assetTokenERC20Arguments.eController_ = controller.address;
   assetTokenEthArguments.eController_ = controller.address;
 
-  const assetTokenERC20 = await AssetTokenERC20.deploy(
+  const assetTokenERC20 = await hardhat.upgrades.deployProxy(AssetTokenERC20,[
     assetTokenERC20Arguments.eController_,
     assetTokenERC20Arguments.amount_,
     assetTokenERC20Arguments.price_,
@@ -41,10 +41,11 @@ async function main() {
     assetTokenERC20Arguments.cashReserveRatio_,
     assetTokenERC20Arguments.name_,
     assetTokenERC20Arguments.symbol_,
+  ]
   );
   console.log("assetTokenERC20 address", assetTokenERC20.address);
 
-  const assetTokenEth = await AssetTokenEth.deploy(
+  const assetTokenEth = await hardhat.upgrades.deployProxy(AssetTokenEth, [
     assetTokenEthArguments.eController_,
     assetTokenEthArguments.amount_,
     assetTokenEthArguments.price_,
@@ -55,6 +56,7 @@ async function main() {
     assetTokenEthArguments.cashReserveRatio_,
     assetTokenEthArguments.name_,
     assetTokenEthArguments.symbol_,
+  ]
   );
   console.log("assetTokenEth address", assetTokenEth.address);
 

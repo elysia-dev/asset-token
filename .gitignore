@@ -135,3 +135,6 @@ build/
 flat/
 typechain/
 workspace.code-workspace
+
+# deploy file
+.openzeppelin/

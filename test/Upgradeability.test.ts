@@ -8,6 +8,7 @@ import { Contract, ContractFactory } from "@ethersproject/contracts";
 
 describe("Upgradeable test", () => {
     let assetTokenEth: Contract;
+    let assetTokenEthUpgraded: Contract;
     let eController: Contract;
     let eControllerUpgraded: Contract;
 
@@ -39,7 +40,7 @@ describe("Upgradeable test", () => {
         AssetTokenEth = await ethers.getContractFactory("AssetTokenEth", admin);
         AssetTokenEthUpgraded = await ethers.getContractFactory("AssetTokenEth", admin);
 
-        eController = await upgrades.deployProxy(EController, {initializer: 'initialize'})
+        eController = await upgrades.deployProxy(EController, { initializer: 'initialize' })
         assetTokenEth = await upgrades.deployProxy(AssetTokenEth, [
             eController.address,
             amount_,
@@ -57,9 +58,6 @@ describe("Upgradeable test", () => {
     })
 
     describe(".EController upgrade proxy", async () => {
-        beforeEach(async () => {
-        })
-
         context('state variables', async () => {
             it('return variables previously set', async () => {
                 eControllerUpgraded = await upgrades.upgradeProxy(eController.address, EControllerUpgraded);
@@ -70,7 +68,7 @@ describe("Upgradeable test", () => {
 
         context('balance', async () => {
             it('should have ether reserves before upgrading', async () => {
-                await assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("0.1")})
+                await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1") })
                 const reserve = await provider.getBalance(eController.address)
                 eControllerUpgraded = await upgrades.upgradeProxy(eController.address, EControllerUpgraded);
                 const reserveNew = await provider.getBalance(eControllerUpgraded.address)
@@ -78,23 +76,42 @@ describe("Upgradeable test", () => {
                 console.log(reserve.toString(), reserveNew.toString())
             })
 
-            it('should have ERC20 reserves before upgrading', async () => {})
+            it('should have ERC20 reserves before upgrading', async () => { })
         })
-
-        context('')
     })
 
     describe(".AssetTokenEth upgrade proxy", async () => {
         context('state variables', async () => {
             it('return variables previously set', async () => {
+                assetTokenEthUpgraded = await upgrades.upgradeProxy(assetTokenEth.address, AssetTokenEthUpgraded);
+                expect(await assetTokenEthUpgraded.totalSupply()).to.equal(amount_)
+                expect(await assetTokenEthUpgraded.price()).to.equal(price_)
+                expect(await assetTokenEthUpgraded.rewardPerBlock()).to.equal(rewardPerBlock_)
+                expect(await assetTokenEthUpgraded.getPayment()).to.equal(payment_)
+                expect(await assetTokenEthUpgraded.latitude()).to.equal(coordinate_[0])
+                expect(await assetTokenEthUpgraded.longitude()).to.equal(coordinate_[1])
+                expect(await assetTokenEthUpgraded.interestRate()).to.equal(interestRate_)
+                expect(await assetTokenEthUpgraded.cashReserveRatio()).to.equal(cashReserveRatio_)
+                expect(await assetTokenEthUpgraded.name()).to.equal(name_)
+                expect(await assetTokenEthUpgraded.symbol()).to.equal(symbol_)
             })
         })
+
         context('balance', async () => {
-            it('return variables previously set', async () => {
+            it('should have token reserves and user balances same as before upgrade', async () => {
+                await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1") })
+                assetTokenEthUpgraded = await upgrades.upgradeProxy(assetTokenEth.address, AssetTokenEthUpgraded);
+                expect(await assetTokenEthUpgraded.balanceOf(account1.address))
+                    .to.be.equal(expandToDecimals(20, 18));
+                expect(await assetTokenEthUpgraded.balanceOf(assetTokenEth.address))
+                    .to.be.equal(amount_.sub(expandToDecimals(20, 18)));
             })
-        })
-        context('function', async () => {
-            it('return variables previously set', async () => {
+
+            it('should deposit reserve to right proxy admin after upgrade', async () => {
+                assetTokenEthUpgraded = await upgrades.upgradeProxy(assetTokenEth.address, AssetTokenEthUpgraded);
+                await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1") })
+                const reserveNew = await provider.getBalance(eControllerUpgraded.address)
+                expect(reserveNew).to.be.equal(ethers.utils.parseEther("0.1"))
             })
         })
     })

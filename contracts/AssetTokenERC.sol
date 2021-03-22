@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
@@ -9,7 +9,7 @@ import "./AssetTokenBase.sol";
 contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
     using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
     using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     function initialize(
         IEController eController_,
@@ -61,7 +61,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
 
         _checkBalance(msg.sender, spent, address(this), amount);
 
-        IERC20(payment).safeTransferFrom(msg.sender, address(this), spent);
+        IERC20Upgradeable(payment).safeTransferFrom(msg.sender, address(this), spent);
 
         _transfer(address(this), msg.sender, amount);
     }
@@ -90,7 +90,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
 
         _checkBalance(address(this), spent, msg.sender, amount);
 
-        IERC20(payment).safeTransfer(msg.sender, spent);
+        IERC20Upgradeable(payment).safeTransfer(msg.sender, spent);
 
         _transfer(msg.sender, address(this), amount);
     }
@@ -110,11 +110,11 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
         uint256 reward = getReward(msg.sender);
 
         require(
-            reward <= IERC20(payment).balanceOf(address(this)),
+            reward <= IERC20Upgradeable(payment).balanceOf(address(this)),
             "AssetToken: Insufficient seller balance."
         );
 
-        IERC20(payment).safeTransfer(msg.sender, reward);
+        IERC20Upgradeable(payment).safeTransfer(msg.sender, reward);
 
         _clearReward(msg.sender);
 
@@ -144,7 +144,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
         );
 
         require(
-            IERC20(payment).balanceOf(buyer) >= spent,
+            IERC20Upgradeable(payment).balanceOf(buyer) >= spent,
             "AssetToken: Insufficient buyer el balance."
         );
 
@@ -158,6 +158,6 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
      * @dev Withdraw all payment from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
-        IERC20(payment).safeTransfer(msg.sender, IERC20(payment).balanceOf(address(this)));
+        IERC20Upgradeable(payment).safeTransfer(msg.sender, IERC20Upgradeable(payment).balanceOf(address(this)));
     }
 }
