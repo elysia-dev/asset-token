@@ -3,6 +3,7 @@ import assetTokenERC20Arguments from "./deployArguments/AssetTokenERC";
 import assetTokenEthArguments from "./deployArguments/AssetTokenEth";
 import testnetERC20Arguements from "./deployArguments/testnetEL";
 import { exec } from "child_process";
+import networkFile from "../.openzeppelin/unknown-97.json";
 
 let el = process.env.el || '';
 
@@ -16,6 +17,10 @@ async function main() {
 
   const controller = await hardhat.upgrades.deployProxy(EController, { initializer: 'initialize' })
   console.log("controller proxy address:", controller.address);
+  
+  const networkFileArray = Array.of(networkFile.impls)
+
+  console.log(networkFileArray[0])
 
   if (!el) {
     const testnetEl = await TestnetEl.deploy(

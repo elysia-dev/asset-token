@@ -107,7 +107,7 @@ describe("Upgradeable test", () => {
                     .to.be.equal(amount_.sub(expandToDecimals(20, 18)));
             })
 
-            it('should deposit reserve to right proxy admin after upgrade', async () => {
+            it('should deposit reserve to the right proxy admin after upgrade', async () => {
                 assetTokenEthUpgraded = await upgrades.upgradeProxy(assetTokenEth.address, AssetTokenEthUpgraded);
                 await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1") })
                 const reserveNew = await provider.getBalance(eControllerUpgraded.address)
