@@ -10,7 +10,6 @@ import "./Library.sol";
 
 contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeable {
     using AssetTokenLibrary for AssetTokenLibrary.RewardLocalVars;
-    using AssetTokenLibrary for AssetTokenLibrary.ReserveLocalVars;
 
     address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
