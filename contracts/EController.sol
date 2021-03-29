@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./IAssetToken.sol";
+import "./IEPriceOracle.sol";
 
 interface IEController {
     function isAdmin(address account) external view returns (bool);
@@ -24,6 +25,12 @@ contract EController is IEController, AccessControlUpgradeable {
 
     bytes32 public constant ASSETTOKEN = keccak256("ASSETTOKEN");
 
+    // priceOracle
+    mapping(address => IEPriceOracle) public ePriceOracle;
+
+    /// @notice Emitted when new priceOracle is set
+    event NewPriceOracle(address ePriceOracle);
+
     // AssetToken list
     IAssetTokenBase[] public assetTokenList;
 
@@ -34,6 +41,19 @@ contract EController is IEController, AccessControlUpgradeable {
         __AccessControl_init();
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(DEFAULT_ADMIN_ROLE, address(this));
+    }
+
+    function getPrice(address payment) external view override returns (uint256) {
+        IEPriceOracle oracle = ePriceOracle[payment];
+        return oracle.getPrice();
+    }
+
+    function setEPriceOracle(IEPriceOracle ePriceOracle_, address payment)
+        external
+        onlyAdmin
+    {
+        ePriceOracle[payment] = ePriceOracle_;
+        emit NewPriceOracle(address(ePriceOracle_));
     }
 
     function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit)
