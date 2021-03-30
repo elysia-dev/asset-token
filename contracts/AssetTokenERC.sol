@@ -19,7 +19,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
         address payment_,
         uint256[] memory coordinate_,
         uint256 interestRate_,
-        uint256 cashReserveRatio_,
+        uint256 blockRemaining_,
         string memory name_,
         string memory symbol_
     ) public initializer {
@@ -31,7 +31,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
             payment_,
             coordinate_,
             interestRate_,
-            cashReserveRatio_,
+            blockRemaining_,
             name_,
             symbol_
         );

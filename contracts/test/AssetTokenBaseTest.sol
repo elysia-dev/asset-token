@@ -12,7 +12,7 @@ contract AssetTokenBaseTest is AssetTokenBase {
         address payment_,
         uint256[] memory coordinate_,
         uint256 interestRate_,
-        uint256 cashReserveRatio_,
+        uint256 blockRemaining_,
         string memory name_,
         string memory symbol_
     )
@@ -25,7 +25,7 @@ contract AssetTokenBaseTest is AssetTokenBase {
             payment_,
             coordinate_,
             interestRate_,
-            cashReserveRatio_,
+            blockRemaining_,
             name_,
             symbol_
         );
@@ -34,6 +34,14 @@ contract AssetTokenBaseTest is AssetTokenBase {
 
     function saveReward(address account) external returns (bool) {
         return _saveReward(account);
+    }
+
+    function setInitialBlock(uint256 initialBlock) external {
+        initialBlocknumber = initialBlock;
+    }
+
+    function setBlockRemaining(uint256 newBlockRemaining) external {
+        blockRemaining = newBlockRemaining;
     }
 
     function clearReward(address account) external returns (bool) {

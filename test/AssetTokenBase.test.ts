@@ -6,6 +6,9 @@ import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import AssetTokenBaseTestArtifact from "../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
 import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
+import { advanceBlock, advanceBlockTo} from "./utils/time"
+import { BigNumber } from "@ethersproject/bignumber";
+import { ethers } from "ethers";
 
 describe("AssetTokenBase", () => {
     let assetTokenBaseTest: AssetTokenBaseTest;
@@ -13,16 +16,15 @@ describe("AssetTokenBase", () => {
 
     const amount_ = expandToDecimals(10000, 18)
     // 0.005 ether per assetToken
-    const price_ = expandToDecimals(5, 15)
+    const price_ = expandToDecimals(5, 18)
     // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     const coordinate_ = [123, 456]
     const interestRate_ = expandToDecimals(1, 17)
-    const cashReserveRatio_ = expandToDecimals(5, 17)
+    const blockRemaining_ = 31530000 / 3
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
-
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
 
@@ -42,7 +44,7 @@ describe("AssetTokenBase", () => {
                 payment_,
                 coordinate_,
                 interestRate_,
-                cashReserveRatio_,
+                blockRemaining_,
                 name_,
                 symbol_,
             ]
@@ -58,7 +60,6 @@ describe("AssetTokenBase", () => {
             expect(await assetTokenBaseTest.latitude()).to.equal(coordinate_[0])
             expect(await assetTokenBaseTest.longitude()).to.equal(coordinate_[1])
             expect(await assetTokenBaseTest.interestRate()).to.equal(interestRate_)
-            expect(await assetTokenBaseTest.cashReserveRatio()).to.equal(cashReserveRatio_)
             expect(await assetTokenBaseTest.name()).to.equal(name_)
             expect(await assetTokenBaseTest.symbol()).to.equal(symbol_)
         })
@@ -128,7 +129,14 @@ describe("AssetTokenBase", () => {
                         ((await tx2.wait()).blockNumber - (await tx1.wait()).blockNumber + 1)
                     ) // getReward tx adds 1 to the blockNumber
             )
+        })
 
+        it('should not accrue reward after maturity', async () => {
+            const initialTx = await assetTokenBaseTest.connect(admin).setBlockRemaining(10);
+            console.log("provider", await provider.getBlockNumber());
+            console.log("first block", (await initialTx.wait()).blockNumber)
+            await advanceBlockTo((await initialTx.wait()).blockNumber + 10)
+            console.log("last provider", await provider.getBlockNumber());
         })
 
         it('if user has no token, save zero value', async () => {

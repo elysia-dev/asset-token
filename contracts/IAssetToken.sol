@@ -4,7 +4,6 @@ pragma solidity 0.8.2;
 interface IAssetTokenBase {
     function setEController(address newEController) external;
     function setRewardPerBlock(uint256 newRewardPerBlock) external;
-    function setCashReserveRatio(uint256 newCashReserveRatio) external;
     function pause() external;
     function unpause() external;
     function getLatitude() external view returns (uint256);
@@ -13,6 +12,7 @@ interface IAssetTokenBase {
     function getPrice() external view returns (uint256);
     function getPayment() external view returns (address);
     function getReward(address account) external view returns (uint256);
+    function tokenMatured() external view returns (bool);
 }
 
 interface IAssetTokenERC20 {

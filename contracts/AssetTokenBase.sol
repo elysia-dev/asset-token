@@ -19,7 +19,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
     uint256 public latitude;
     uint256 public longitude;
     uint256 public interestRate;
-    uint256 public cashReserveRatio;
 
     // price per Elysia Asset Token
     // decimals: 18
@@ -31,6 +30,12 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
 
     // currency payment address, 0xEeeeeEee... is ether
     address public payment;
+
+    // blocknumber recorded in deploying
+    uint public initialBlocknumber;
+
+    // block remaining before token maturity
+    uint public blockRemaining;
 
     // Account rewards
     // Decimals: 18
@@ -54,9 +59,6 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
     /// @notice Emitted when eController is changed
     event NewController(address newController);
 
-    /// @notice Emitted when cashReserveRatio is set
-    event NewCashReserveRatio(uint256 newCashReserveRatio);
-
     function __AssetTokenBase_init(
         IEController eController_,
         uint256 amount_,
@@ -65,7 +67,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         address payment_,
         uint256[] memory coordinate_,
         uint256 interestRate_,
-        uint256 cashReserveRatio_,
+        uint256 blockRemaining_,
         string memory name_,
         string memory symbol_
     ) public initializer {
@@ -75,7 +77,8 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         payment = payment_;
         _setCoordinate(coordinate_[0], coordinate_[1]);
         interestRate = interestRate_;
-        _setCashReserveRatio(cashReserveRatio_);
+        initialBlocknumber = block.number;
+        blockRemaining = blockRemaining_;
         _mint(address(this), amount_);
         __ERC20_init(name_, symbol_);
         __Pausable_init();
@@ -107,6 +110,10 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         return _getReward(account);
     }
 
+    function tokenMatured() external view override returns (bool) {
+        return _tokenMatured();
+    }
+
     /*** Admin functions ***/
 
     function setEController(address newEController)
@@ -129,22 +136,8 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         emit NewRewardPerBlock(newRewardPerBlock);
     }
 
-    function setCashReserveRatio(uint256 newCashReserveRatio)
-        external
-        override
-        onlyAdmin(msg.sender)
-    {
-        _setCashReserveRatio(newCashReserveRatio);
-
-        emit NewCashReserveRatio(newCashReserveRatio);
-    }
-
     function _setRewardPerBlock(uint256 newRewardPerBlock) internal {
         rewardPerBlock = newRewardPerBlock;
-    }
-
-    function _setCashReserveRatio(uint256 newCashReserveRatio) internal {
-        cashReserveRatio = newCashReserveRatio;
     }
 
     function _setCoordinate(uint newLatitude, uint256 newLongitude) internal {
@@ -180,13 +173,20 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
      * @return saved reward + new reward
      */
     function _getReward(address account) internal view returns (uint256) {
+
+        uint256 blockNumber = block.number;
+
+        if (_tokenMatured()) {
+            blockNumber = initialBlocknumber + blockRemaining;
+        }
+
         AssetTokenLibrary.RewardLocalVars memory vars =
             AssetTokenLibrary.RewardLocalVars({
                 newReward: 0,
                 accountReward: _rewards[account],
                 accountBalance: balanceOf(account),
                 rewardBlockNumber: _blockNumbers[account],
-                blockNumber: block.number,
+                blockNumber: blockNumber,
                 diffBlock: 0,
                 rewardPerBlock: rewardPerBlock,
                 totalSupply: totalSupply()
@@ -223,6 +223,13 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
 
     function _getCurrencyPrice() internal view returns (uint256) {
         return eController.getPrice(payment);
+    }
+
+    /**
+     * @notice return true after the maturity of the bond
+     */
+    function _tokenMatured() internal view returns (bool) {
+        return initialBlocknumber + blockRemaining <= block.number;
     }
 
     /**
