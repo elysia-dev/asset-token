@@ -1,24 +1,64 @@
 import { expect } from "chai";
 import { waffle } from "hardhat";
-import { EController } from "../typechain/EController";
+import { EControllerTest } from "../typechain/EControllerTest";
+import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
 import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
 import makeAssetTokenBase from "./utils/makeAssetTokenBase";
 import { deployContract } from "ethereum-waffle";
-import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
+import EControllerTestArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 import { ethers } from "ethers";
 import expandToDecimals from "./utils/expandToDecimals";
+import makeEPriceOracleTest from "./utils/makeEPriceOracle";
+import { TestnetEL } from "../typechain/TestnetEL";
+import TestnetELArtifact from "../artifacts/contracts/test/TestnetEL.sol/TestnetEL.json"
 
 describe("Controller", () => {
-    let eController: EController;
+    let eController: EControllerTest;
+    let el: TestnetEL;
 
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
 
+    const elTotalSupply = expandToDecimals(7, 28)
+
     beforeEach(async () => {
         eController = await deployContract(
             admin,
-            EControllerArtifact
-        ) as EController
+            EControllerTestArtifact
+        ) as EControllerTest
+
+        el = await deployContract(
+            admin,
+            TestnetELArtifact,
+            [
+                elTotalSupply,
+                "TestnetEL",
+                "EL",
+            ]
+        ) as TestnetEL;
+    });
+
+    context(".setEPriceOracle", async () => {
+        let ePriceOracleTest: EPriceOracleTest;
+
+        beforeEach(async () => {
+            ePriceOracleTest = await makeEPriceOracleTest({
+                from: admin,
+                eController: eController
+            })
+        })
+
+        it("Admin can set oracle", async () => {
+            await expect(eController.connect(admin).setEPriceOracle(ePriceOracleTest.address, el.address))
+                .to.emit(eController, "NewPriceOracle")
+                .withArgs(ePriceOracleTest.address)
+            expect(await eController.ePriceOracle(el.address)).to.be.equal(ePriceOracleTest.address)
+        });
+
+        it("General account cannot set assetToken", async () => {
+            await expect(eController.connect(account1).setEPriceOracle(ePriceOracleTest.address, el.address))
+                .to.be.revertedWith("Restricted to admin.")
+        });
     });
 
     context(".control asset token", async () => {
@@ -67,6 +107,46 @@ describe("Controller", () => {
                     .to.be.revertedWith("Restricted to assetToken.")
             })
         })
+    })
+    context(".Oracle view function", async () => {
+        let ePriceOracleTestEth: EPriceOracleTest
+        let ePriceOracleTestEL: EPriceOracleTest
+        let assetTokenBase0: AssetTokenBaseTest
+        let assetTokenBase1: AssetTokenBaseTest
 
+        beforeEach(async () => {
+            ePriceOracleTestEth = await makeEPriceOracleTest({
+                from: admin,
+                eController: eController
+            })
+            ePriceOracleTestEL = await makeEPriceOracleTest({
+                from: admin,
+                eController: eController,
+                payment: el.address
+            })
+            assetTokenBase0 = await makeAssetTokenBase
+                ({
+                    from: admin,
+                    eController_: eController.address
+                })
+            assetTokenBase1 = await makeAssetTokenBase
+                ({
+                    from: admin,
+                    eController_: eController.address,
+                    payment_: el.address
+                })
+            await eController.connect(admin).setAssetTokens(
+                [
+                    assetTokenBase0.address,
+                    assetTokenBase1.address
+                ])
+        })
+
+        it("getPrice return assetToken payment type price", async () => {
+            expect(await eController.connect(assetTokenBase0.address).getPrice(await assetTokenBase0.getPayment()))
+                .to.equal(await ePriceOracleTestEth.getPrice())
+            expect(await eController.connect(assetTokenBase1.address).getPrice(await assetTokenBase1.getPayment()))
+                .to.equal(await ePriceOracleTestEL.getPrice())
+        })
     })
 });

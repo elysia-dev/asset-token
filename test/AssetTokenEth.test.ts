@@ -6,6 +6,7 @@ import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
 import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 import AssetTokenEthArtifact from "../artifacts/contracts/test/AssetTokenEthTest.sol/AssetTokenEthTest.json"
+import makeEPriceOracleTest from "./utils/makeEPriceOracle";
 
 describe("AssetTokenEth", () => {
     let assetTokenEth: AssetTokenEthTest;
@@ -13,7 +14,7 @@ describe("AssetTokenEth", () => {
 
     const amount_ = expandToDecimals(10000, 18)
     // 0.005 ether = 1 assetToken
-    const price_ = expandToDecimals(5, 15)
+    const price_ = expandToDecimals(5, 18)
     // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
@@ -25,11 +26,6 @@ describe("AssetTokenEth", () => {
 
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
-
-    const options = {
-        gasLimit: 999999,
-        value: ethers.utils.parseEther("0.1")
-    }
 
     beforeEach(async () => {
         eController = await deployContract(
@@ -54,28 +50,30 @@ describe("AssetTokenEth", () => {
         ) as AssetTokenEthTest
         await eController.connect(admin)
             .setAssetTokens([assetTokenEth.address])
+
+        await makeEPriceOracleTest({
+            from: admin,
+            eController: eController
+        })
+
     })
 
     describe(".reserve requirement system", async () => {
-        context('send reserve', async () => {
-            it('send reserve and emit event for excess reserve', async () => {
-                await expect(assetTokenEth.connect(account1).purchase(options))
-                    .to.emit(assetTokenEth, 'ReserveDeposited')
-                    .withArgs(ethers.utils.parseEther("0.1"))
-                expect(await provider.getBalance(assetTokenEth.address))
-                    .to.be.equal(ethers.utils.parseEther("0"))
-                expect(await provider.getBalance(eController.address))
-                    .to.be.equal(ethers.utils.parseEther("0.1"))
-            })
+        it('send reserve and emit event for excess reserve', async () => {
+            expect(await assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("0.1")}))
+                .to.emit(assetTokenEth, 'ReserveDeposited')
+                .withArgs(ethers.utils.parseEther("0.1"))
+            expect(await provider.getBalance(assetTokenEth.address))
+                .to.be.equal(ethers.utils.parseEther("0"))
+            expect(await provider.getBalance(eController.address))
+                .to.be.equal(ethers.utils.parseEther("0.1"))
         })
 
-        context('request for payment', async () => {
-            it('send request for insufficient reserve for payment', async () => {
-                await assetTokenEth.connect(account1).purchase(options)
-                await expect(await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
-                    .to.emit(assetTokenEth, 'ReserveWithdrawed')
-                    .withArgs(ethers.utils.parseEther("0.05"))
-            })
+        it('send request for insufficient reserve for payment', async () => {
+            await assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("0.1")})
+            await expect(await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
+                .to.emit(assetTokenEth, 'ReserveWithdrawed')
+                .withArgs(ethers.utils.parseEther("0.05"))
         })
 
         it('cannot execute purchase, refund and claimReward when paused', async () => {
@@ -92,7 +90,7 @@ describe("AssetTokenEth", () => {
     describe(".purchase", async () => {
         it('if account has sufficient allowed eth balance, can purchase token', async () => {
             const beforeBalance = await provider.getBalance(eController.address)
-            expect(await assetTokenEth.connect(account1).purchase(options))
+            expect(await assetTokenEth.connect(account1).purchase({gasLimit: 8888888, value: ethers.utils.parseEther("0.1")}))
                 .to.changeEtherBalance(account1, ethers.utils.parseEther("-0.1"))
             // cannot use changeEtherBalnce in contract.address
             const afterBalance = await provider.getBalance(eController.address)
@@ -101,7 +99,7 @@ describe("AssetTokenEth", () => {
             expect(await assetTokenEth.balanceOf(assetTokenEth.address))
                 .to.be.equal(amount_.sub(expandToDecimals(20, 18)));
             expect(afterBalance.sub(beforeBalance)).to.be.equal(
-                price_.mul(20)
+                price_.mul(20).mul(expandToDecimals(1, 18)).div((await eController.getPrice(payment_)))
             );
         })
 
@@ -118,7 +116,7 @@ describe("AssetTokenEth", () => {
 
     describe(".refund", async () => {
         it('if account and contract has sufficient balance, refund token', async () => {
-            await assetTokenEth.connect(account1).purchase(options)
+            await assetTokenEth.connect(account1).purchase({gasLimit: 8888888, value: ethers.utils.parseEther("0.1")})
             expect(await assetTokenEth.connect(account1).refund(expandToDecimals(10, 18)))
                 .to.changeEtherBalance(account1, ethers.utils.parseEther("0.05"))
             expect(await assetTokenEth.balanceOf(account1.address)).to.be.equal(expandToDecimals(10, 18));
@@ -180,7 +178,7 @@ describe("AssetTokenEth", () => {
         let thirdBlock: number;
 
         beforeEach(async () => {
-            firstBlock = (await (await assetTokenEth.connect(account1).purchase(options)).wait()).blockNumber;
+            firstBlock = (await (await assetTokenEth.connect(account1).purchase({gasLimit: 999999, value: ethers.utils.parseEther("0.1")})).wait()).blockNumber;
             secondBlock = (await (await assetTokenEth.connect(account1).transfer(account2.address, expandToDecimals(10, 18))).wait()).blockNumber;
             thirdBlock = (await (await assetTokenEth.connect(account1).transfer(account2.address, expandToDecimals(10, 18))).wait()).blockNumber;
         })

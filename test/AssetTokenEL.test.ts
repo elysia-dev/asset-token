@@ -1,16 +1,16 @@
 import { assert, expect } from "chai";
 import { waffle } from "hardhat";
 import { EController } from "../typechain/EController";
-import { AssetTokenEL } from "../typechain/AssetTokenEL"
+import { AssetTokenERC } from "../typechain/AssetTokenERC"
 import { TestnetEL } from "../typechain/TestnetEL"
 import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
-import AssetTokenELArtifact from "../artifacts/contracts/AssetTokenEl.sol/AssetTokenEL.json"
+import AssetTokenERCArtifact from "../artifacts/contracts/AssetTokenERC.sol/AssetTokenERC.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
 import TestnetELArtifact from "../artifacts/contracts/test/TestnetEL.sol/TestnetEL.json"
 
 describe("AssetTokenEl", () => {
-    let assetTokenEL: AssetTokenEL;
+    let assetTokenEL: AssetTokenERC;
     let eController: EController;
     let el: TestnetEL;
 
@@ -49,7 +49,7 @@ describe("AssetTokenEl", () => {
         ) as EController
         assetTokenEL = await deployContract(
             admin,
-            AssetTokenELArtifact,
+            AssetTokenERCArtifact,
             [
                 el.address,
                 eController.address,
@@ -65,7 +65,7 @@ describe("AssetTokenEl", () => {
                 symbol_,
                 decimals_,
             ]
-        ) as AssetTokenEL;
+        ) as AssetTokenERC;
         await eController.connect(admin)
             .setAssetTokens([assetTokenEL.address])
     })

@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./IAssetToken.sol";
 import "./EController.sol";
 import "./Library.sol";
+import "hardhat/console.sol";
 
 contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeable {
     using AssetTokenLibrary for AssetTokenLibrary.RewardLocalVars;
