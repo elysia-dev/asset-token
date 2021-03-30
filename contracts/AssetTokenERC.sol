@@ -54,6 +54,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
         AssetTokenLibrary.AmountLocalVars memory vars =
             AssetTokenLibrary.AmountLocalVars({
                 spent: spent,
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
@@ -83,6 +84,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
         AssetTokenLibrary.SpentLocalVars memory vars =
             AssetTokenLibrary.SpentLocalVars({
                 amount: amount,
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
@@ -107,7 +109,7 @@ contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        uint256 reward = getReward(msg.sender);
+        uint256 reward = _getReward(msg.sender) * 1e18 / _getCurrencyPrice();
 
         require(
             reward <= IERC20Upgradeable(payment).balanceOf(address(this)),

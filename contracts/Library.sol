@@ -16,11 +16,13 @@ library AssetTokenLibrary {
 
     struct SpentLocalVars {
         uint256 amount;
+        uint256 currencyPrice;
         uint256 assetTokenPrice;
     }
 
     struct AmountLocalVars {
         uint256 spent;
+        uint256 currencyPrice;
         uint256 assetTokenPrice;
     }
 
@@ -56,7 +58,7 @@ library AssetTokenLibrary {
         pure
         returns (uint)
     {
-        return self.amount * self.assetTokenPrice / 1e18;
+        return self.amount * self.assetTokenPrice / self.currencyPrice;
     }
 
     function getAmount(AmountLocalVars memory self)
@@ -64,7 +66,7 @@ library AssetTokenLibrary {
         pure
         returns (uint)
     {
-        return self.spent * 1e18 / self.assetTokenPrice;
+        return self.spent * self.currencyPrice / self.assetTokenPrice;
     }
 
     /**

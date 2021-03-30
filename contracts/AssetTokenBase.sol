@@ -102,6 +102,10 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         return payment;
     }
 
+    function getReward(address account) external view override returns (uint256) {
+        return _getReward(account);
+    }
+
     /*** Admin functions ***/
 
     function setEController(address newEController)
@@ -174,7 +178,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
      * @param account Addresss
      * @return saved reward + new reward
      */
-    function getReward(address account) public view returns (uint256) {
+    function _getReward(address account) internal view returns (uint256) {
         AssetTokenLibrary.RewardLocalVars memory vars =
             AssetTokenLibrary.RewardLocalVars({
                 newReward: 0,
@@ -199,7 +203,7 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
             return true;
         }
 
-        _rewards[account] = getReward(account);
+        _rewards[account] = _getReward(account);
         _blockNumbers[account] = block.number;
 
         return true;
@@ -214,6 +218,10 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
         _blockNumbers[account] = block.number;
 
         return true;
+    }
+
+    function _getCurrencyPrice() internal view returns (uint256) {
+        return eController.getPrice(payment);
     }
 
     /**

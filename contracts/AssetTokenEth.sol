@@ -57,6 +57,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         AssetTokenLibrary.AmountLocalVars memory vars =
             AssetTokenLibrary.AmountLocalVars({
                 spent: msg.value,
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
@@ -87,6 +88,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         AssetTokenLibrary.SpentLocalVars memory vars =
             AssetTokenLibrary.SpentLocalVars({
                 amount: amount,
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
@@ -119,7 +121,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         override
         whenNotPaused
     {
-        uint256 reward = getReward(msg.sender);
+        uint256 reward = _getReward(msg.sender) * 1e18 / _getCurrencyPrice();
 
          _withdrawReserve(reward);
 

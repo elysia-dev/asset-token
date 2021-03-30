@@ -9,6 +9,8 @@ import "./IAssetToken.sol";
 import "./IEPriceOracle.sol";
 
 interface IEController {
+
+    function getPrice(address payment) external view returns(uint256);
     function isAdmin(address account) external view returns (bool);
     function isAssetToken(address account) external view returns (bool);
     function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit) external returns (bool);
@@ -48,14 +50,6 @@ contract EController is IEController, AccessControlUpgradeable {
         return oracle.getPrice();
     }
 
-    function setEPriceOracle(IEPriceOracle ePriceOracle_, address payment)
-        external
-        onlyAdmin
-    {
-        ePriceOracle[payment] = ePriceOracle_;
-        emit NewPriceOracle(address(ePriceOracle_));
-    }
-
     function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit)
         external
         payable
@@ -75,6 +69,14 @@ contract EController is IEController, AccessControlUpgradeable {
     {
         IERC20Upgradeable(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
         return true;
+    }
+
+    function setEPriceOracle(IEPriceOracle ePriceOracle_, address payment)
+        external
+        onlyAdmin
+    {
+        ePriceOracle[payment] = ePriceOracle_;
+        emit NewPriceOracle(address(ePriceOracle_));
     }
 
     /**
