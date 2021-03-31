@@ -52,7 +52,7 @@ async function main() {
     assetTokenEthArguments.payment_,
     assetTokenEthArguments.coordinate_,
     assetTokenEthArguments.interestRate_,
-    assetTokenEthArguments.cashReserveRatio_,
+    assetTokenEthArguments.blockRemaining_,
     assetTokenEthArguments.name_,
     assetTokenEthArguments.symbol_,
   );

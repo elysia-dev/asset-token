@@ -7,8 +7,6 @@ import { deployContract } from "ethereum-waffle";
 import AssetTokenBaseTestArtifact from "../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
 import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 import { advanceBlock, advanceBlockTo} from "./utils/time"
-import { BigNumber } from "@ethersproject/bignumber";
-import { ethers } from "ethers";
 
 describe("AssetTokenBase", () => {
     let assetTokenBaseTest: AssetTokenBaseTest;
@@ -139,10 +137,23 @@ describe("AssetTokenBase", () => {
             await assetTokenBaseTest.connect(admin).setInitialBlock(initialBlock)
             const transferTx = await assetTokenBaseTest.connect(admin).transfer(account1.address, expandToDecimals(10, 18))
             await advanceBlockTo(initialBlock + blockRemaining)
+            expect(await assetTokenBaseTest.tokenMatured()).to.be.true;
             expect((await assetTokenBaseTest.getReward(account1.address)).toNumber())
                 .to.be.equal(
                     account1RewardPerBlock.mul(initialBlock + blockRemaining - (await transferTx.wait()).blockNumber)
                 )
+        })
+
+        it('reward should be clear when claim reward twice after maturity', async () => {
+            const initialTx = await assetTokenBaseTest.connect(admin).setBlockRemaining(blockRemaining);
+            initialBlock = (await initialTx.wait()).blockNumber
+            await assetTokenBaseTest.connect(admin).setInitialBlock(initialBlock)
+            const transferTx = await assetTokenBaseTest.connect(admin).transfer(account1.address, expandToDecimals(10, 18))
+            await advanceBlockTo(initialBlock + blockRemaining)
+            await assetTokenBaseTest.connect(admin).clearReward(account1.address)
+            await advanceBlock()
+            expect((await assetTokenBaseTest.getReward(account1.address)).toNumber())
+                .to.be.equal(0)
         })
 
         it('if user has no token, save zero value', async () => {

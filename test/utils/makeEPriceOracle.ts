@@ -4,6 +4,7 @@ import EPriceOracleTestArtifact from "../../artifacts/contracts/test/EPriceOracl
 import { BigNumber, Wallet } from "ethers";
 import { deployContract } from "ethereum-waffle";
 import expandToDecimals from "./expandToDecimals";
+import { Contract } from "@ethersproject/contracts";
 
 // mocking and set price oracle contract
 // Default payment = eth
@@ -15,7 +16,7 @@ async function makeEPriceOracleTest({
     price = expandToDecimals(1000, 18),
 }: {
     from: Wallet
-    eController: EControllerTest
+    eController: EControllerTest | Contract
     payment?: string
     price?: BigNumber
 }): Promise<EPriceOracleTest> {

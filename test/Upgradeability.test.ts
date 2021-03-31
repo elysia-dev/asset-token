@@ -1,10 +1,9 @@
 import { expect } from "chai";
-import { AssetTokenEth } from "../typechain/AssetTokenEth"
 import expandToDecimals from "./utils/expandToDecimals";
 import { ethers, upgrades, waffle } from "hardhat";
-import { deployContract } from "ethereum-waffle";
-import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 import { Contract, ContractFactory } from "@ethersproject/contracts";
+import { EPriceOracleTest } from "../typechain/EPriceOracleTest";
+import makeEPriceOracleTest from "./utils/makeEPriceOracle";
 
 describe("Upgradeable test", () => {
     let assetTokenEth: Contract;
@@ -19,17 +18,19 @@ describe("Upgradeable test", () => {
 
     const amount_ = expandToDecimals(10000, 18)
     // 0.005 ether = 1 assetToken
-    const price_ = expandToDecimals(5, 15)
+    const price_ = expandToDecimals(5, 18)
     // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     const coordinate_ = [123, 456]
     const interestRate_ = expandToDecimals(1, 17)
-    const cashReserveRatio_ = expandToDecimals(5, 17)
+    const blockRemaining_ = 31530000 / 3
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
 
     const provider = waffle.provider;
+
+    let ePriceOracleTestEth: EPriceOracleTest;
 
     const [admin, account1, account2] = provider.getWallets()
 
@@ -49,12 +50,17 @@ describe("Upgradeable test", () => {
             payment_,
             coordinate_,
             interestRate_,
-            cashReserveRatio_,
+            blockRemaining_,
             name_,
             symbol_,
         ])
         await eController.connect(admin)
             .setAssetTokens([assetTokenEth.address])
+
+        ePriceOracleTestEth = await makeEPriceOracleTest({
+            from: admin,
+            eController: eController
+        })
     })
 
     describe(".EController upgrade proxy", async () => {
@@ -68,12 +74,11 @@ describe("Upgradeable test", () => {
 
         context('balance', async () => {
             it('should have ether reserves before upgrading', async () => {
-                await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1") })
+                await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1")})
                 const reserve = await provider.getBalance(eController.address)
                 eControllerUpgraded = await upgrades.upgradeProxy(eController.address, EControllerUpgraded);
                 const reserveNew = await provider.getBalance(eControllerUpgraded.address)
                 expect(reserve).to.be.equal(reserveNew)
-                console.log(reserve.toString(), reserveNew.toString())
             })
 
             it('should have ERC20 reserves before upgrading', async () => { })
@@ -91,7 +96,7 @@ describe("Upgradeable test", () => {
                 expect(await assetTokenEthUpgraded.latitude()).to.equal(coordinate_[0])
                 expect(await assetTokenEthUpgraded.longitude()).to.equal(coordinate_[1])
                 expect(await assetTokenEthUpgraded.interestRate()).to.equal(interestRate_)
-                expect(await assetTokenEthUpgraded.cashReserveRatio()).to.equal(cashReserveRatio_)
+                expect(await assetTokenEthUpgraded.blockRemaining()).to.equal(blockRemaining_)
                 expect(await assetTokenEthUpgraded.name()).to.equal(name_)
                 expect(await assetTokenEthUpgraded.symbol()).to.equal(symbol_)
             })

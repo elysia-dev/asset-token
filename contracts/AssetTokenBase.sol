@@ -7,13 +7,13 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./IAssetToken.sol";
 import "./EController.sol";
 import "./Library.sol";
-import "hardhat/console.sol";
 
 contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeable {
     using AssetTokenLibrary for AssetTokenLibrary.RewardLocalVars;
 
     address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
+    // eController
     IEController public eController;
 
     uint256 public latitude;
@@ -24,11 +24,11 @@ contract AssetTokenBase is IAssetTokenBase, ERC20Upgradeable, PausableUpgradeabl
     // decimals: 18
     uint256 public price;
 
-    // AnnualInterestRate/(secondsPerYear*averageBlockPerSecond)
+    // AnnualInterest/(secondsPerYear*averageSecondPerBlock)
     // Decimals: 18
     uint256 public rewardPerBlock;
 
-    // currency payment address, 0xEeeeeEee... is ether
+    // currency payment address
     address public payment;
 
     // blocknumber recorded in deploying

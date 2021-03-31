@@ -140,13 +140,6 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     }
 
     /**
-     * @dev Withdraw all remaining eth from this contract to admin
-     */
-    function withdrawToAdmin() public onlyAdmin(msg.sender) {
-        AddressUpgradeable.sendValue(payable(msg.sender), address(this).balance);
-    }
-
-    /**
      * @dev check if buyer and seller have sufficient balance.
      *
      * This can be used to check balance of buyer and seller before swap.

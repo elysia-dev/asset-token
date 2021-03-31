@@ -134,19 +134,6 @@ describe("AssetTokenEth", () => {
         })
     })
 
-    xdescribe('.withdrawEthToAdmin', async () => {
-        it('admin can withdrwal all ether.', async () => {
-            expect(await assetTokenEth.connect(admin).withdrawToAdmin())
-                .to.changeEtherBalance(account1, await provider.getBalance(assetTokenEth.address))
-            expect(await provider.getBalance(assetTokenEth.address)).to.be.equal(0);
-        })
-
-        it('account cannot withdraw ether.', async () => {
-            await expect(assetTokenEth.connect(account1).withdrawToAdmin())
-                .to.be.revertedWith('Restricted')
-        })
-    })
-
     describe('Asset token Pausable', async () => {
         it('Admin can pause asset token', async () => {
             await expect(assetTokenEth.connect(admin).pause())

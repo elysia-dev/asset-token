@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./IAssetToken.sol";
 import "./IEPriceOracle.sol";
-import "hardhat/console.sol";
 
 interface IEController {
 
@@ -31,11 +30,11 @@ contract EController is IEController, AccessControlUpgradeable {
     // priceOracle
     mapping(address => IEPriceOracle) public ePriceOracle;
 
-    /// @notice Emitted when new priceOracle is set
-    event NewPriceOracle(address ePriceOracle);
-
     // AssetToken list
     IAssetTokenBase[] public assetTokenList;
+
+    /// @notice Emitted when new priceOracle is set
+    event NewPriceOracle(address ePriceOracle);
 
     /// @notice Emitted when new assetToken is set
     event NewAssetToken(address assetToken);
@@ -46,30 +45,12 @@ contract EController is IEController, AccessControlUpgradeable {
         _setupRole(DEFAULT_ADMIN_ROLE, address(this));
     }
 
+    /**
+     * @notice get price through decentralized oracle networks that feed into pricing aggregators
+     */
     function getPrice(address payment) external view override returns (uint256) {
         IEPriceOracle oracle = ePriceOracle[payment];
         return oracle.getPrice();
-    }
-
-    function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit)
-        external
-        payable
-        override
-        onlyAssetToken
-        returns (bool)
-    {
-        AddressUpgradeable.sendValue(payable(msg.sender), reserveDeficit);
-        return true;
-    }
-
-    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
-        external
-        override
-        onlyAssetToken
-        returns (bool)
-    {
-        IERC20Upgradeable(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
-        return true;
     }
 
     function setEPriceOracle(IEPriceOracle ePriceOracle_, address payment)
@@ -125,6 +106,35 @@ contract EController is IEController, AccessControlUpgradeable {
         for (uint256 i = 0; i < len; i++) {
             assetTokens[i].unpause();
         }
+    }
+
+    /*** Reserve Functions***/
+
+    /**
+     * @notice deposit eth reserve in the asset token
+     */
+    function withdrawReserveFromAssetTokenEth(uint256 reserveDeficit)
+        external
+        payable
+        override
+        onlyAssetToken
+        returns (bool)
+    {
+        AddressUpgradeable.sendValue(payable(msg.sender), reserveDeficit);
+        return true;
+    }
+
+    /**
+     * @notice deposit ERC20 reserve in the asset token
+     */
+    function withdrawReserveFromAssetTokenERC20(uint256 reserveDeficit)
+        external
+        override
+        onlyAssetToken
+        returns (bool)
+    {
+        IERC20Upgradeable(IAssetTokenBase(msg.sender).getPayment()).safeTransfer(msg.sender, reserveDeficit);
+        return true;
     }
 
     function migrateEthReserve()

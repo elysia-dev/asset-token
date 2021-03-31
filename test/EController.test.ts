@@ -44,19 +44,20 @@ describe("Controller", () => {
         beforeEach(async () => {
             ePriceOracleTest = await makeEPriceOracleTest({
                 from: admin,
-                eController: eController
+                eController: eController,
+                payment: el.address
             })
         })
 
         it("Admin can set oracle", async () => {
-            await expect(eController.connect(admin).setEPriceOracle(ePriceOracleTest.address, el.address))
+            expect(await eController.connect(admin).setEPriceOracle(ePriceOracleTest.address, el.address))
                 .to.emit(eController, "NewPriceOracle")
                 .withArgs(ePriceOracleTest.address)
             expect(await eController.ePriceOracle(el.address)).to.be.equal(ePriceOracleTest.address)
         });
 
         it("General account cannot set assetToken", async () => {
-            await expect(eController.connect(account1).setEPriceOracle(ePriceOracleTest.address, el.address))
+            expect(await eController.connect(account1).setEPriceOracle(ePriceOracleTest.address, el.address))
                 .to.be.revertedWith("Restricted to admin.")
         });
     });
