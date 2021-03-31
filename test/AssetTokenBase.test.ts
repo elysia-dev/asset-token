@@ -92,16 +92,18 @@ describe("AssetTokenBase", () => {
     })
 
     context('Asset Token Reward', async () => {
-        const account1RewardPerBlock = rewardPerBlock_.mul(10).div(amount_)
+        const account1RewardPerBlock = rewardPerBlock_.mul(expandToDecimals(10, 18)).div(amount_)
+        let initialBlock: number
+        const blockRemaining = 10
 
         it('should accrue reward properly', async () => {
             const beforeTx = await assetTokenBaseTest.connect(admin).transfer(
                 account1.address,
-                10)
+                expandToDecimals(10, 18))
             const beforeReward = await assetTokenBaseTest.getReward(account1.address)
             const afterTx = await assetTokenBaseTest.connect(admin).transfer(
                 account1.address,
-                10)
+                expandToDecimals(10, 18))
             const afterReward = await assetTokenBaseTest.getReward(account1.address)
             expect(afterReward.sub(beforeReward))
                 .to.be.equal(account1RewardPerBlock
@@ -113,14 +115,14 @@ describe("AssetTokenBase", () => {
 
         it('if account do not have tokens, return zero', async () => {
             expect(await assetTokenBaseTest.getReward(account2.address)).to.be.equal(0)
-            await assetTokenBaseTest.connect(admin).transfer(account1.address, 10)
+            await assetTokenBaseTest.connect(admin).transfer(account1.address, expandToDecimals(10, 18))
             expect(await assetTokenBaseTest.getReward(account2.address)).to.be.equal(0)
         })
 
         it('if account has token, reward is saved', async () => {
             await assetTokenBaseTest.connect(admin).transfer(
                 account1.address,
-                10)
+                expandToDecimals(10, 18))
             const tx1 = await assetTokenBaseTest.saveReward(account1.address);
             const tx2 = await assetTokenBaseTest.saveReward(account1.address);
             expect(await assetTokenBaseTest.getReward(account1.address)).to.be.equal(
@@ -132,11 +134,15 @@ describe("AssetTokenBase", () => {
         })
 
         it('should not accrue reward after maturity', async () => {
-            const initialTx = await assetTokenBaseTest.connect(admin).setBlockRemaining(10);
-            console.log("provider", await provider.getBlockNumber());
-            console.log("first block", (await initialTx.wait()).blockNumber)
-            await advanceBlockTo((await initialTx.wait()).blockNumber + 10)
-            console.log("last provider", await provider.getBlockNumber());
+            const initialTx = await assetTokenBaseTest.connect(admin).setBlockRemaining(blockRemaining);
+            initialBlock = (await initialTx.wait()).blockNumber
+            await assetTokenBaseTest.connect(admin).setInitialBlock(initialBlock)
+            const transferTx = await assetTokenBaseTest.connect(admin).transfer(account1.address, expandToDecimals(10, 18))
+            await advanceBlockTo(initialBlock + blockRemaining)
+            expect((await assetTokenBaseTest.getReward(account1.address)).toNumber())
+                .to.be.equal(
+                    account1RewardPerBlock.mul(initialBlock + blockRemaining - (await transferTx.wait()).blockNumber)
+                )
         })
 
         it('if user has no token, save zero value', async () => {
