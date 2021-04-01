@@ -1,8 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-library AssetTokenLibrary {
 
+/**
+ * @title AssetToken module for calculating
+ * @notice LocalVars are used to calculate in purchase, refund, claimReward
+ * RewardLocalVars : user reward calculation
+ * SpentLocalVars : the ratio of asset token and user reward calculation in refund
+ * AmountLocalVars : the ratio of asset token and user reward calculation in purchase
+ * ReserveLocalVars : No used
+ */
+library AssetTokenLibrary {
     struct RewardLocalVars {
         uint256 newReward;
         uint256 accountReward;
@@ -35,6 +43,11 @@ library AssetTokenLibrary {
         uint256 contractBalance;
     }
 
+    /**
+     * @notice The accured reward is the sum of account reward and newReward
+     * it returns the accountReward if token matured.
+     * @return Return account reward accrued.
+     */
     function getReward(RewardLocalVars memory self)
         internal
         pure
@@ -53,6 +66,10 @@ library AssetTokenLibrary {
         return self.accountReward + self.newReward;
     }
 
+    /**
+     * @notice Calculate the ratio of assetToken and user reward in refund
+     * @return currency amount to given amount of token for refunding
+     */
     function getSpent(SpentLocalVars memory self)
         internal
         pure
@@ -61,6 +78,10 @@ library AssetTokenLibrary {
         return self.amount * self.assetTokenPrice / self.currencyPrice;
     }
 
+   /**
+     * @notice Calculate the ratio of assetToken and user reward in purchase
+     * @return the amount of currency to given amount of currency for purchasing
+     */
     function getAmount(AmountLocalVars memory self)
         internal
         pure

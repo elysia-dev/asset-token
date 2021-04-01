@@ -1,7 +1,7 @@
 const TestnetEL = {
   totalSupply_: '7' + '0'.repeat(28),
-  name_: "kovanEL",
-  symbol_: "KEL",
+  name_: "TestEL",
+  symbol_: "TestEL",
 }
 
 export default TestnetEL

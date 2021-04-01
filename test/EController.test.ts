@@ -1,15 +1,16 @@
 import { expect } from "chai";
-import { waffle } from "hardhat";
-import { EControllerTest } from "../typechain/EControllerTest";
+import { waffle, ethers } from "hardhat";
+import { deployContract } from "ethereum-waffle";
+import makeAssetTokenBase from "./utils/makeAssetTokenBase";
+import makeEPriceOracleTest from "./utils/makeEPriceOracle";
+import {expandToDecimals} from "./utils/Ethereum";
+
+import { TestnetEL } from "../typechain/TestnetEL";
 import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
 import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
-import makeAssetTokenBase from "./utils/makeAssetTokenBase";
-import { deployContract } from "ethereum-waffle";
+import { EControllerTest } from "../typechain/EControllerTest";
+
 import EControllerTestArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
-import { ethers } from "ethers";
-import expandToDecimals from "./utils/expandToDecimals";
-import makeEPriceOracleTest from "./utils/makeEPriceOracle";
-import { TestnetEL } from "../typechain/TestnetEL";
 import TestnetELArtifact from "../artifacts/contracts/test/TestnetEL.sol/TestnetEL.json"
 
 describe("Controller", () => {

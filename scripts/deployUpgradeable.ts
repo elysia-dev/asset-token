@@ -11,9 +11,9 @@ async function main() {
   console.log(`${hardhat.network.name} deploy start`);
 
   const EController = await hardhat.ethers.getContractFactory("EController");
-  //const AssetTokenERC20 = await hardhat.ethers.getContractFactory("AssetTokenERC");
+  const AssetTokenERC20 = await hardhat.ethers.getContractFactory("AssetTokenERC");
   const AssetTokenEth = await hardhat.ethers.getContractFactory("AssetTokenEth");
-  //const TestnetEl = await hardhat.ethers.getContractFactory("TestnetEL")
+  const TestnetEl = await hardhat.ethers.getContractFactory("TestnetEL")
   const EPriceOracleEth = await hardhat.ethers.getContractFactory("EPriceOracleEth")
 
   const ePriceOracleEth = await EPriceOracleEth.deploy(
@@ -26,33 +26,33 @@ async function main() {
   const controller = await hardhat.upgrades.deployProxy(EController, { initializer: 'initialize' })
   console.log("controller proxy address:", controller.address);
 
-  // if (!el) {
-  //   const testnetEl = await TestnetEl.deploy(
-  //     testnetERC20Arguements.totalSupply_,
-  //     testnetERC20Arguements.name_,
-  //     testnetERC20Arguements.symbol_,
-  //   );
-  //   console.log(`${hardhat.network.name}EL address:`, testnetEl.address);
-  //   el = testnetEl.address
-  // }
+  if (!el) {
+    const testnetEl = await TestnetEl.deploy(
+      testnetERC20Arguements.totalSupply_,
+      testnetERC20Arguements.name_,
+      testnetERC20Arguements.symbol_,
+    );
+    console.log(`${hardhat.network.name}EL address:`, testnetEl.address);
+    el = testnetEl.address
+  }
 
-  //assetTokenERC20Arguments.eController_ = controller.address;
+  assetTokenERC20Arguments.eController_ = controller.address;
   assetTokenEthArguments.eController_ = controller.address;
 
-  // const assetTokenERC20 = await hardhat.upgrades.deployProxy(AssetTokenERC20,[
-  //   assetTokenERC20Arguments.eController_,
-  //   assetTokenERC20Arguments.amount_,
-  //   assetTokenERC20Arguments.price_,
-  //   assetTokenERC20Arguments.rewardPerBlock_,
-  //   assetTokenERC20Arguments.payment_,
-  //   assetTokenERC20Arguments.coordinate_,
-  //   assetTokenERC20Arguments.interestRate_,
-  //   assetTokenERC20Arguments.cashReserveRatio_,
-  //   assetTokenERC20Arguments.name_,
-  //   assetTokenERC20Arguments.symbol_,
-  // ]
-  // );
-  // console.log("assetTokenERC20 address", assetTokenERC20.address);
+  const assetTokenERC20 = await hardhat.upgrades.deployProxy(AssetTokenERC20,[
+    assetTokenERC20Arguments.eController_,
+    assetTokenERC20Arguments.amount_,
+    assetTokenERC20Arguments.price_,
+    assetTokenERC20Arguments.rewardPerBlock_,
+    assetTokenERC20Arguments.payment_,
+    assetTokenERC20Arguments.coordinate_,
+    assetTokenERC20Arguments.interestRate_,
+    assetTokenERC20Arguments.blockRemaining_,
+    assetTokenERC20Arguments.name_,
+    assetTokenERC20Arguments.symbol_,
+  ]
+  );
+  console.log("assetTokenERC20 address", assetTokenERC20.address);
 
   const assetTokenEth = await hardhat.upgrades.deployProxy(AssetTokenEth, [
     assetTokenEthArguments.eController_,
@@ -70,7 +70,7 @@ async function main() {
   console.log("assetTokenEth address", assetTokenEth.address);
 
   await controller.setAssetTokens([
-    //assetTokenERC20.address,
+    assetTokenERC20.address,
     assetTokenEth.address,
   ]);
 
@@ -87,23 +87,6 @@ async function main() {
     }
     console.log(`stdout: ${stdout}`);
   })
-
-  // exec(`EL=${el}\
-  //   CONTROLLER=${controller.address}\
-  //   ASSET_TOKEN_ETH=${assetTokenEth.address}\
-  //   ASSET_TOKEN_ERC20=${assetTokenERC20.address}\
-  //   NETWORK=${hardhat.network.name}\
-  //   yarn ts-node scripts/verify.ts`, (error, stdout, stderr) => {
-  //   if (error) {
-  //     console.log(`error: ${error.message}`);
-  //     return;
-  //   }
-  //   if (stderr) {
-  //     console.log(`stderr: ${stderr}`);
-  //     return;
-  //   }
-  //   console.log(`stdout: ${stdout}`);
-  // });
 }
 
 if (!['mainnet', 'kovan', 'binanceTestnet', 'binanceMainnet'].includes(hardhat.network.name)) {

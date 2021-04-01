@@ -3,12 +3,12 @@ import { EControllerTest } from "../../typechain/EControllerTest";
 import EPriceOracleTestArtifact from "../../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
 import { BigNumber, Wallet } from "ethers";
 import { deployContract } from "ethereum-waffle";
-import expandToDecimals from "./expandToDecimals";
+import {expandToDecimals} from "./Ethereum";
 import { Contract } from "@ethersproject/contracts";
 
 // mocking and set price oracle contract
 // Default payment = eth
-// Default price = 1000 dollars (1000 * 10^18)
+// Default price = 1000USD (1000 * 10^18)
 async function makeEPriceOracleTest({
     from,
     eController,

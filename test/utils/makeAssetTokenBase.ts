@@ -1,8 +1,8 @@
 import { AssetTokenBaseTest } from "../../typechain/AssetTokenBaseTest"
 import AssetTokenBaseArtifact from "../../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
-import { BigNumber, Contract, Wallet } from "ethers";
+import { BigNumber, Wallet } from "ethers";
 import { deployContract } from "ethereum-waffle";
-import expandToDecimals from "./expandToDecimals";
+import {expandToDecimals} from "./Ethereum";
 
 async function makeAssetTokenBase({
     from,

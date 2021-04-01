@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import expandToDecimals from "./utils/expandToDecimals";
 import { ethers, upgrades, waffle } from "hardhat";
 import { Contract, ContractFactory } from "@ethersproject/contracts";
-import { EPriceOracleTest } from "../typechain/EPriceOracleTest";
+import { expandToDecimals } from "./utils/Ethereum";
 import makeEPriceOracleTest from "./utils/makeEPriceOracle";
+import { EPriceOracleTest } from "../typechain/EPriceOracleTest";
 
 describe("Upgradeable test", () => {
     let assetTokenEth: Contract;
@@ -17,9 +17,7 @@ describe("Upgradeable test", () => {
     let AssetTokenEthUpgraded: ContractFactory
 
     const amount_ = expandToDecimals(10000, 18)
-    // 0.005 ether = 1 assetToken
     const price_ = expandToDecimals(5, 18)
-    // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     const coordinate_ = [123, 456]
@@ -74,7 +72,7 @@ describe("Upgradeable test", () => {
 
         context('balance', async () => {
             it('should have ether reserves before upgrading', async () => {
-                await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1")})
+                await assetTokenEth.connect(account1).purchase({ gasLimit: 999999, value: ethers.utils.parseEther("0.1") })
                 const reserve = await provider.getBalance(eController.address)
                 eControllerUpgraded = await upgrades.upgradeProxy(eController.address, EControllerUpgraded);
                 const reserveNew = await provider.getBalance(eControllerUpgraded.address)

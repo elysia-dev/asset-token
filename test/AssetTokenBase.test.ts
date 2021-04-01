@@ -2,11 +2,11 @@ import { expect } from "chai";
 import { waffle } from "hardhat";
 import { EControllerTest } from "../typechain/EControllerTest";
 import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
-import expandToDecimals from "./utils/expandToDecimals";
+import {expandToDecimals} from "./utils/Ethereum";
 import { deployContract } from "ethereum-waffle";
 import AssetTokenBaseTestArtifact from "../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
 import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
-import { advanceBlock, advanceBlockTo} from "./utils/time"
+import { advanceBlock, advanceBlockTo} from "./utils/Ethereum"
 
 describe("AssetTokenBase", () => {
     let assetTokenBaseTest: AssetTokenBaseTest;
@@ -31,6 +31,7 @@ describe("AssetTokenBase", () => {
             admin,
             EControllerArtifact
         ) as EControllerTest
+        
         assetTokenBaseTest = await deployContract(
             admin,
             AssetTokenBaseTestArtifact,

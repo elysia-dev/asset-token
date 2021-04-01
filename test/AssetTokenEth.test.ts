@@ -1,21 +1,20 @@
 import { expect } from "chai";
 import { ethers, waffle } from "hardhat";
+import { deployContract } from "ethereum-waffle";
+import {expandToDecimals} from "./utils/Ethereum";
+import makeEPriceOracleTest from "./utils/makeEPriceOracle";
+
 import { EControllerTest } from "../typechain/EControllerTest";
 import { AssetTokenEthTest } from "../typechain/AssetTokenEthTest"
-import expandToDecimals from "./utils/expandToDecimals";
-import { deployContract } from "ethereum-waffle";
 import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 import AssetTokenEthArtifact from "../artifacts/contracts/test/AssetTokenEthTest.sol/AssetTokenEthTest.json"
-import makeEPriceOracleTest from "./utils/makeEPriceOracle";
 
 describe("AssetTokenEth", () => {
     let assetTokenEth: AssetTokenEthTest;
     let eController: EControllerTest;
 
     const amount_ = expandToDecimals(10000, 18)
-    // 0.005 ether = 1 assetToken
     const price_ = expandToDecimals(5, 18)
-    // price * interestRate / (secondsPerYear * blockTime)
     const rewardPerBlock_ = expandToDecimals(237, 6)
     const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
     const coordinate_ = [123, 456]
