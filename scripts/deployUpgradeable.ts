@@ -17,8 +17,8 @@ async function main() {
   const EPriceOracleEth = await hardhat.ethers.getContractFactory("EPriceOracleEth")
 
   const ePriceOracleEth = await EPriceOracleEth.deploy(
-      '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526'
-    );
+    '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526'
+  );
 
   priceOracleETH = ePriceOracleEth.address;
   console.log("ePriceOracleEth address:", ePriceOracleEth.address);
@@ -76,7 +76,7 @@ async function main() {
 
   await controller.setEPriceOracle(ePriceOracleEth.address, "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE")
 
-  exec(`yarn hardhat verify --network ${hardhat.network.name} ${priceOracleETH} "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526"`, (error, stdout, stderr) => {
+  exec(`yarn hardhat verify --network ${hardhat.network.name} ${priceOracleETH} "0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE"`, (error, stdout, stderr) => {
     if (error) {
       console.log(`error: ${error.message}`);
       return;
