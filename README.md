@@ -32,9 +32,9 @@ In case asset token contract vulnerability is detected, calling `pause` can stop
 
 **Maturity**
 
-The concept of maturity is added. Since the asset tokens are minted based on the bond of real asset, the maturity of the token should affect the functionality of the token. THe general maturity of the asset token is one year.
+Since the asset tokens are minted based on the bond of real asset, the maturity of the token should affect the functionality of the token. The general maturity of the asset token is one year.
 
-Reward calculations are stopped after the maturity of the token. The asset token contract's `blockRemaining`, which is unsigned integer newly added, can indicate and be used to determine when to stop calculating reward. Users can check whether the bond is expired by executing an internal function `_tokenMatured` which returns true after the maturity date.
+Reward calculations are stopped after the maturity of the token. The asset token contract's `blockRemaining`, which is unsigned integer newly added, can indicate and be used to determine when to stop calculating reward. Users and the asset token contracts can check whether the bond is expired by executing an internal function `_tokenMatured` which returns true after the maturity date.
 
 The basic functionalities are still available but users are not able to accrue rewards by owning tokens after the maturity of the asset token.
 
@@ -57,7 +57,7 @@ As the reward in asset token is calculated in dollars, asset token relies on pri
 
 Price feed allows asset token contract to obtain price feeds and ensure that Elysia users receive fair market exchange rates when interacting with asset token contract.
 
-Although the Elysia server aggregates data from multiple data sources and set EL price, we recognize that a single centralized oracle creates the very problem, a central point of weakness. we will implement chainlink EL/USDT feed as soon as possible.
+Although the Elysia server aggregates data from multiple data sources and set EL price, we recognize that a single centralized oracle creates the very problem, a central point of weakness. we will implement chainlink EL/USD feed as soon as possible.
 
 ### **Controller**
 
