@@ -1,21 +1,19 @@
 import { assert, expect } from "chai";
 import { waffle } from "hardhat";
-import { EController } from "../typechain/EController";
-import { AssetTokenEL } from "../typechain/AssetTokenEL"
-import { EPriceOracleTest } from "../typechain/EPriceOracleTest"
-import { TestnetEL } from "../typechain/TestnetEL"
-import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
-import AssetTokenELArtifact from "../artifacts/contracts/AssetTokenEl.sol/AssetTokenEL.json"
+import { expandToDecimals } from "./utils/Ethereum";
+
+import { TestnetEL } from "../typechain/TestnetEL"
+import { EController } from "../typechain/EController";
+import { AssetTokenERC } from "../typechain/AssetTokenERC"
+import AssetTokenERCArtifact from "../artifacts/contracts/AssetTokenERC.sol/AssetTokenERC.json"
 import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
 import TestnetELArtifact from "../artifacts/contracts/test/TestnetEL.sol/TestnetEL.json"
-import EPriceOracleTestArtifact from "../artifacts/contracts/test/EPriceOracleTest.sol/EPriceOracleTest.json"
 
 describe("AssetTokenEl", () => {
-    let assetTokenEL: AssetTokenEL;
+    let assetTokenEL: AssetTokenERC;
     let eController: EController;
     let el: TestnetEL;
-    let ePriceOracleEL: EPriceOracleTest
 
     const amount_ = expandToDecimals(10000, 18)
     const price_ = expandToDecimals(5, 18)
@@ -46,17 +44,13 @@ describe("AssetTokenEl", () => {
                 18
             ]
         ) as TestnetEL;
-        ePriceOracleEL = await deployContract(
-            admin,
-            EPriceOracleTestArtifact
-        ) as EPriceOracleTest;
         eController = await deployContract(
             admin,
             EControllerArtifact
         ) as EController
         assetTokenEL = await deployContract(
             admin,
-            AssetTokenELArtifact,
+            AssetTokenERCArtifact,
             [
                 el.address,
                 eController.address,
@@ -72,13 +66,9 @@ describe("AssetTokenEl", () => {
                 symbol_,
                 decimals_,
             ]
-        ) as AssetTokenEL;
-        await eController.connect(admin)
-            .setEPriceOracle(ePriceOracleEL.address, 0)
+        ) as AssetTokenERC;
         await eController.connect(admin)
             .setAssetTokens([assetTokenEL.address])
-        await ePriceOracleEL.connect(admin)
-            .setPrice(elPrice)
     })
 
     context(".purchase", async () => {

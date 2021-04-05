@@ -1,58 +1,46 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.4;
+pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
 
-contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
-    using SafeMath for uint256;
-    using AssetTokenLibrary for SpentLocalVars;
-    using AssetTokenLibrary for AmountLocalVars;
+contract AssetTokenERC is IAssetTokenERC20, AssetTokenBase {
+    using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    IERC20 private _el;
-
-    /// @notice Emitted when an user claimed reward
-    event RewardClaimed(address account, uint256 reward);
-
-    constructor(
-        IERC20 el_,
+    function initialize(
         IEController eController_,
         uint256 amount_,
         uint256 price_,
         uint256 rewardPerBlock_,
-        uint256 payment_,
-        uint256 latitude_,
-        uint256 longitude_,
-        uint256 assetPrice_,
+        address payment_,
+        uint256[] memory coordinate_,
         uint256 interestRate_,
+        uint256 blockRemaining_,
         string memory name_,
-        string memory symbol_,
-        uint8 decimals_
-    )
-        AssetTokenBase(
+        string memory symbol_
+    ) public initializer {
+        __AssetTokenBase_init(
             eController_,
             amount_,
             price_,
             rewardPerBlock_,
             payment_,
-            latitude_,
-            longitude_,
-            assetPrice_,
+            coordinate_,
             interestRate_,
+            blockRemaining_,
             name_,
-            symbol_,
-            decimals_
-        )
-    {
-        _el = el_;
+            symbol_
+        );
     }
 
     /**
-     * @dev purchase asset token with el.
+     * @dev purchase asset token with ERC20.
      *
-     * This can be used to purchase asset token with Elysia Token (EL).
+     * This can be used to purchase asset token with Elysia Token (ERC20).
      *
      * Requirements:
      * - `spent` msg.sender should have more spent.
@@ -63,10 +51,10 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        AmountLocalVars memory vars =
-            AmountLocalVars({
+        AssetTokenLibrary.AmountLocalVars memory vars =
+            AssetTokenLibrary.AmountLocalVars({
                 spent: spent,
-                currencyPrice: eController.getPrice(payment),
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
@@ -74,14 +62,8 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
 
         _checkBalance(msg.sender, spent, address(this), amount);
 
-        require(
-            _el.transferFrom(
-                msg.sender,
-                address(this),
-                spent
-            ),
-            "EL : transferFrom failed"
-        );
+        IERC20Upgradeable(payment).safeTransferFrom(msg.sender, address(this), spent);
+
         _transfer(address(this), msg.sender, amount);
     }
 
@@ -99,10 +81,10 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        SpentLocalVars memory vars =
-            SpentLocalVars({
+        AssetTokenLibrary.SpentLocalVars memory vars =
+            AssetTokenLibrary.SpentLocalVars({
                 amount: amount,
-                currencyPrice: eController.getPrice(payment),
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
@@ -110,10 +92,8 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
 
         _checkBalance(address(this), spent, msg.sender, amount);
 
-        require(
-            _el.transfer(msg.sender, spent),
-            "EL : transfer failed"
-        );
+        IERC20Upgradeable(payment).safeTransfer(msg.sender, spent);
+
         _transfer(msg.sender, address(this), amount);
     }
 
@@ -129,14 +109,15 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         override
         whenNotPaused
     {
-        uint256 reward =
-            getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
+        uint256 reward = _getReward(msg.sender) * 1e18 / _getCurrencyPrice();
 
         require(
-            reward <= _el.balanceOf(address(this)),
+            reward <= IERC20Upgradeable(payment).balanceOf(address(this)),
             "AssetToken: Insufficient seller balance."
         );
-        _el.transfer(msg.sender, reward);
+
+        IERC20Upgradeable(payment).safeTransfer(msg.sender, reward);
+
         _clearReward(msg.sender);
 
         emit RewardClaimed(msg.sender, reward);
@@ -165,7 +146,7 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
         );
 
         require(
-            _el.balanceOf(buyer) >= spent,
+            IERC20Upgradeable(payment).balanceOf(buyer) >= spent,
             "AssetToken: Insufficient buyer el balance."
         );
 
@@ -176,9 +157,9 @@ contract AssetTokenEL is IAssetTokenERC20, AssetTokenBase {
     }
 
     /**
-     * @dev Withdraw all El from this contract to admin
+     * @dev Withdraw all payment from this contract to admin
      */
     function withdrawToAdmin() public onlyAdmin(msg.sender) {
-        _el.transfer(msg.sender, _el.balanceOf(address(this)));
+        IERC20Upgradeable(payment).safeTransfer(msg.sender, IERC20Upgradeable(payment).balanceOf(address(this)));
     }
 }

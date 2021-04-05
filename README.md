@@ -21,6 +21,7 @@ Every user accrues monthly rent every block upon purchasing and transferring of 
 
 The asset token contract’s `_rewardPerBlock` is an unsigned integer that indicates the rate at which the contract distributes monthly rent to asset token owners, every Ethereum block. The contract automatically transfers accrued monthly rent to a user’s address when the address executes `claimReward` functions. Users may call the `claimReward` method on the contract at any time for finer-grained control over their monthly rent. The contract compute reward using the library.
 
+
 **Purchase and Refund**
 
 When users specify their payment, Asset Token contract require users to first make approval to perform purchase or refund functionality.
@@ -29,19 +30,44 @@ When users specify their payment, Asset Token contract require users to first ma
 
 In case asset token contract vulnerability is detected, calling `pause` can stop purchases, refunds, and rewards.
 
+**Maturity**
+
+Since the asset tokens are minted based on the bond of real asset, the maturity of the token should affect the functionality of the token. The general maturity of the asset token is one year.
+
+Reward calculations are stopped after the maturity of the token. The asset token contract's `blockRemaining`, which is unsigned integer newly added, can indicate and be used to determine when to stop calculating reward. Users and the asset token contracts can check whether the bond is expired by executing an internal function `_tokenMatured` which returns true after the maturity date.
+
+The basic functionalities are still available but users are not able to accrue rewards by owning tokens after the maturity of the asset token.
+
+Below is an example scenario.
+
+*Reward per block per token : 5*
+
+Block.number | Transaction | User AssetToken Balance | Reward
+:-----------:|:-----------:|:-----------------------:|:-----:
+0 | Token deployed | 0 | **0**
+1 | `purchase(10)` | 10 | **0**
+6 | `purchase(10)` | 20 | **50**
+11 | <span style="color:red">Token matured</span> | 20 | **150**
+15 | - | 20 | **150**
+
+
 ### **Oracle**
 
 As the reward in asset token is calculated in dollars, asset token relies on price feeds to operate. Asset token implements [Chainlink](https://chain.link/) price feed as the primary oracle solution throughout its system. Except for EL, all of the crypto data feeds use chainlink price feed.
 
 Price feed allows asset token contract to obtain price feeds and ensure that Elysia users receive fair market exchange rates when interacting with asset token contract.
 
-Although the Elysia server aggregates data from multiple data sources and set EL price, we recognize that a single centralized oracle creates the very problem, a central point of weakness. we will implement chainlink EL/USDT feed as soon as possible.
+Although the Elysia server aggregates data from multiple data sources and set EL price, we recognize that a single centralized oracle creates the very problem, a central point of weakness. we will implement chainlink EL/USD feed as soon as possible.
 
 ### **Controller**
 
 The controller is the risk management and the oracle layer of the AssetToken. Each time user interacts with an asset token, such as purchase, refund, and claim reward, the controller is asked to provide off-chain data.
 
-Asset token call 'getPrice' which returns the most recent price for a token in USD with 6 decimals of precision in 18 decimals.
+Asset token call `getPrice` which returns the most recent price for a token in USD with 8 decimals of precision in 18 decimals.
+
+When users purchase the asset tokens, all reserve of asset tokens is moved to the controller contract automatically to facilitate the management of funds. The insufficient amount is transferred from the controller to the asset token when users refund.
+
+All the flow of reserve is executed through the openzeppelin library's method which is proven safe way to transfer ether and other ERC20 tokens.
 
 ### **Library**
 

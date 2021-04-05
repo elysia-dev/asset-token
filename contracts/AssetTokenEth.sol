@@ -1,48 +1,39 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.4;
+pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./EController.sol";
 import "./IAssetToken.sol";
 import "./AssetTokenBase.sol";
 
 contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
-    using SafeMath for uint256;
-    using AssetTokenLibrary for SpentLocalVars;
-    using AssetTokenLibrary for AmountLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.SpentLocalVars;
+    using AssetTokenLibrary for AssetTokenLibrary.AmountLocalVars;
 
-    /// @notice Emitted when an user claimed reward
-    event RewardClaimed(address account, uint256 reward);
-
-    constructor(
+    function initialize(
         IEController eController_,
         uint256 amount_,
         uint256 price_,
         uint256 rewardPerBlock_,
-        uint256 payment_,
-        uint256 latitude_,
-        uint256 longitude_,
-        uint256 assetPrice_,
+        address payment_,
+        uint256[] memory coordinate_,
         uint256 interestRate_,
+        uint256 blockRemaining_,
         string memory name_,
-        string memory symbol_,
-        uint8 decimals_
-    )
-        AssetTokenBase(
+        string memory symbol_
+    ) public initializer {
+        __AssetTokenBase_init(
             eController_,
             amount_,
             price_,
             rewardPerBlock_,
             payment_,
-            latitude_,
-            longitude_,
-            assetPrice_,
+            coordinate_,
             interestRate_,
+            blockRemaining_,
             name_,
-            symbol_,
-            decimals_
-        )
-    {}
+            symbol_
+        );
+    }
 
     /**
      * @dev purchase asset token with eth.
@@ -63,10 +54,10 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
             "Not enough msg.value"
         );
 
-        AmountLocalVars memory vars =
-            AmountLocalVars({
+        AssetTokenLibrary.AmountLocalVars memory vars =
+            AssetTokenLibrary.AmountLocalVars({
                 spent: msg.value,
-                currencyPrice: eController.getPrice(payment),
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
@@ -74,6 +65,8 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
         _checkBalance(address(this), amount);
         _transfer(address(this), msg.sender, amount);
+
+        _depositReserve(msg.value);
     }
 
     /**
@@ -92,14 +85,16 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     {
         _checkBalance(msg.sender, amount);
 
-        SpentLocalVars memory vars =
-            SpentLocalVars({
+        AssetTokenLibrary.SpentLocalVars memory vars =
+            AssetTokenLibrary.SpentLocalVars({
                 amount: amount,
-                currencyPrice: eController.getPrice(payment),
+                currencyPrice: _getCurrencyPrice(),
                 assetTokenPrice: price
             });
 
         uint256 spent = vars.getSpent();
+
+         _withdrawReserve(spent);
 
         require(
             address(this).balance >= spent,
@@ -108,10 +103,7 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
 
         _transfer(msg.sender, address(this), amount);
 
-        require(
-            msg.sender.send(spent),
-            "Eth : send failed"
-        );
+        AddressUpgradeable.sendValue(payable(msg.sender), spent);
     }
 
     /**
@@ -129,8 +121,9 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         override
         whenNotPaused
     {
-        uint256 reward =
-            getReward(msg.sender).mul(1e18).div(eController.getPrice(payment));
+        uint256 reward = _getReward(msg.sender) * 1e18 / _getCurrencyPrice();
+
+         _withdrawReserve(reward);
 
         require(
             reward <= address(this).balance,
@@ -138,18 +131,12 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
         );
 
         _clearReward(msg.sender);
+
         if (!payable(msg.sender).send(reward)) {
             _saveReward(msg.sender);
         }
 
         emit RewardClaimed(msg.sender, reward);
-    }
-
-    /**
-     * @dev Withdraw all eth from this contract to admin
-     */
-    function withdrawToAdmin() public onlyAdmin(msg.sender) {
-        require(payable(msg.sender).send(address(this).balance), "Admin withdraw failed");
     }
 
     /**
@@ -171,9 +158,21 @@ contract AssetTokenEth is IAssetTokenEth, AssetTokenBase {
     }
 
     /**
-     * @dev allow asset token to receive eth from other accounts.
-     * Monthly rent profit (eth) is acummulated in asset token from elysia admin account
+     * @notice deposit reserve in the controller
      */
-    receive() external payable {
+    function _depositReserve(uint256 reserveSurplus) internal override {
+        AddressUpgradeable.sendValue(payable(address(eController)), reserveSurplus);
+        emit ReserveDeposited(reserveSurplus);
+    }
+
+    /**
+     * @notice withdraw reserve from the controller
+     */
+    function _withdrawReserve(uint256 reserveDeficit) internal override {
+        require(
+            eController.withdrawReserveFromAssetTokenEth(reserveDeficit),
+            "withdraw failed"
+        );
+        emit ReserveWithdrawed(reserveDeficit);
     }
 }

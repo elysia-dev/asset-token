@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.7.4;
+pragma solidity 0.8.2;
 
 import "@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol";
-import "@openzeppelin/contracts/utils/SafeCast.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "./IEPriceOracle.sol";
 import "./Library.sol";
 
@@ -14,18 +13,11 @@ import "./Library.sol";
  */
 contract EPriceOracleEth is IEPriceOracle {
     using SafeCast for int256;
-    using SafeMath for uint256;
-
-    address public admin;
-
-/// @notice Emitted when admin is changed
-    event NewAdmin(address newAdmin);
 
     AggregatorV3Interface internal _priceFeed;
 
     constructor(address priceFeed_) {
         _priceFeed = AggregatorV3Interface(priceFeed_);
-        admin = msg.sender;
     }
 
     function getPrice() external view override returns (uint256) {
@@ -41,14 +33,7 @@ contract EPriceOracleEth is IEPriceOracle {
             uint80 answeredInRound
         ) = _priceFeed.latestRoundData();
 
-        return price.toUint256().mul(1e10);
+        return price.toUint256() * 1e10;
     }
 
-    function setAdmin(address account) external {
-        require(msg.sender == admin, "Restricted to admin.");
-
-        admin = account;
-
-        emit NewAdmin(account);
-    }
 }

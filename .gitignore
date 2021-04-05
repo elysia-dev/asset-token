@@ -134,3 +134,7 @@ build/
 # flatten file
 flat/
 typechain/
+workspace.code-workspace
+
+# deploy file
+.openzeppelin/

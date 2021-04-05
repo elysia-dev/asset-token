@@ -1,28 +1,29 @@
 import { expect } from "chai";
 import { waffle } from "hardhat";
-import { EController } from "../typechain/EController";
-import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
-import expandToDecimals from "./utils/expandToDecimals";
 import { deployContract } from "ethereum-waffle";
+import {expandToDecimals} from "./utils/Ethereum";
+import { advanceBlock, advanceBlockTo} from "./utils/Ethereum"
+
+import { EControllerTest } from "../typechain/EControllerTest";
+import { AssetTokenBaseTest } from "../typechain/AssetTokenBaseTest"
 import AssetTokenBaseTestArtifact from "../artifacts/contracts/test/AssetTokenBaseTest.sol/AssetTokenBaseTest.json"
-import EControllerArtifact from "../artifacts/contracts/EController.sol/EController.json"
+import EControllerArtifact from "../artifacts/contracts/test/EControllerTest.sol/EControllerTest.json"
 
 describe("AssetTokenBase", () => {
     let assetTokenBaseTest: AssetTokenBaseTest;
-    let eController: EController;
+    let eController: EControllerTest;
 
-    const amount_ = 10000
+    const amount_ = expandToDecimals(10000, 18)
+    // 0.005 ether per assetToken
     const price_ = expandToDecimals(5, 18)
-    const rewardPerBlock_ = expandToDecimals(5, 14)
-    const payment_ = 0
-    const latitude_ = 123
-    const longitude_ = 456
-    const assetPrice_ = expandToDecimals(5, 21)
+    // price * interestRate / (secondsPerYear * blockTime)
+    const rewardPerBlock_ = expandToDecimals(237, 6)
+    const payment_ = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+    const coordinate_ = [123, 456]
     const interestRate_ = expandToDecimals(1, 17)
+    const blockRemaining_ = 31530000 / 3
     const name_ = "ExampleAsset"
     const symbol_ = "EA"
-    const decimals_ = 0
-
     const provider = waffle.provider;
     const [admin, account1, account2] = provider.getWallets()
 
@@ -30,7 +31,8 @@ describe("AssetTokenBase", () => {
         eController = await deployContract(
             admin,
             EControllerArtifact
-        ) as EController
+        ) as EControllerTest
+
         assetTokenBaseTest = await deployContract(
             admin,
             AssetTokenBaseTestArtifact,
@@ -40,13 +42,11 @@ describe("AssetTokenBase", () => {
                 price_,
                 rewardPerBlock_,
                 payment_,
-                latitude_,
-                longitude_,
-                assetPrice_,
+                coordinate_,
                 interestRate_,
+                blockRemaining_,
                 name_,
                 symbol_,
-                decimals_,
             ]
         ) as AssetTokenBaseTest;
     })
@@ -57,12 +57,11 @@ describe("AssetTokenBase", () => {
             expect(await assetTokenBaseTest.price()).to.equal(price_)
             expect(await assetTokenBaseTest.rewardPerBlock()).to.equal(rewardPerBlock_)
             expect(await assetTokenBaseTest.getPayment()).to.equal(payment_)
-            expect(await assetTokenBaseTest.latitude()).to.equal(latitude_)
-            expect(await assetTokenBaseTest.longitude()).to.equal(longitude_)
-            expect(await assetTokenBaseTest.assetPrice()).to.equal(assetPrice_)
+            expect(await assetTokenBaseTest.latitude()).to.equal(coordinate_[0])
+            expect(await assetTokenBaseTest.longitude()).to.equal(coordinate_[1])
+            expect(await assetTokenBaseTest.interestRate()).to.equal(interestRate_)
             expect(await assetTokenBaseTest.name()).to.equal(name_)
             expect(await assetTokenBaseTest.symbol()).to.equal(symbol_)
-            expect(await assetTokenBaseTest.decimals()).to.equal(decimals_)
         })
     })
 
@@ -93,16 +92,18 @@ describe("AssetTokenBase", () => {
     })
 
     context('Asset Token Reward', async () => {
-        const account1RewardPerBlock = rewardPerBlock_.mul(10).div(amount_)
+        const account1RewardPerBlock = rewardPerBlock_.mul(expandToDecimals(10, 18)).div(amount_)
+        let initialBlock: number
+        const blockRemaining = 10
 
         it('should accrue reward properly', async () => {
             const beforeTx = await assetTokenBaseTest.connect(admin).transfer(
                 account1.address,
-                10)
+                expandToDecimals(10, 18))
             const beforeReward = await assetTokenBaseTest.getReward(account1.address)
             const afterTx = await assetTokenBaseTest.connect(admin).transfer(
                 account1.address,
-                10)
+                expandToDecimals(10, 18))
             const afterReward = await assetTokenBaseTest.getReward(account1.address)
             expect(afterReward.sub(beforeReward))
                 .to.be.equal(account1RewardPerBlock
@@ -114,14 +115,14 @@ describe("AssetTokenBase", () => {
 
         it('if account do not have tokens, return zero', async () => {
             expect(await assetTokenBaseTest.getReward(account2.address)).to.be.equal(0)
-            await assetTokenBaseTest.connect(admin).transfer(account1.address, 10)
+            await assetTokenBaseTest.connect(admin).transfer(account1.address, expandToDecimals(10, 18))
             expect(await assetTokenBaseTest.getReward(account2.address)).to.be.equal(0)
         })
 
         it('if account has token, reward is saved', async () => {
             await assetTokenBaseTest.connect(admin).transfer(
                 account1.address,
-                10)
+                expandToDecimals(10, 18))
             const tx1 = await assetTokenBaseTest.saveReward(account1.address);
             const tx2 = await assetTokenBaseTest.saveReward(account1.address);
             expect(await assetTokenBaseTest.getReward(account1.address)).to.be.equal(
@@ -130,7 +131,31 @@ describe("AssetTokenBase", () => {
                         ((await tx2.wait()).blockNumber - (await tx1.wait()).blockNumber + 1)
                     ) // getReward tx adds 1 to the blockNumber
             )
+        })
 
+        it('should not accrue reward after maturity', async () => {
+            const initialTx = await assetTokenBaseTest.connect(admin).setBlockRemaining(blockRemaining);
+            initialBlock = (await initialTx.wait()).blockNumber
+            await assetTokenBaseTest.connect(admin).setInitialBlock(initialBlock)
+            const transferTx = await assetTokenBaseTest.connect(admin).transfer(account1.address, expandToDecimals(10, 18))
+            await advanceBlockTo(initialBlock + blockRemaining)
+            expect(await assetTokenBaseTest.tokenMatured()).to.be.true;
+            expect((await assetTokenBaseTest.getReward(account1.address)).toNumber())
+                .to.be.equal(
+                    account1RewardPerBlock.mul(initialBlock + blockRemaining - (await transferTx.wait()).blockNumber)
+                )
+        })
+
+        it('reward should be clear when claim reward twice after maturity', async () => {
+            const initialTx = await assetTokenBaseTest.connect(admin).setBlockRemaining(blockRemaining);
+            initialBlock = (await initialTx.wait()).blockNumber
+            await assetTokenBaseTest.connect(admin).setInitialBlock(initialBlock)
+            const transferTx = await assetTokenBaseTest.connect(admin).transfer(account1.address, expandToDecimals(10, 18))
+            await advanceBlockTo(initialBlock + blockRemaining)
+            await assetTokenBaseTest.connect(admin).clearReward(account1.address)
+            await advanceBlock()
+            expect((await assetTokenBaseTest.getReward(account1.address)).toNumber())
+                .to.be.equal(0)
         })
 
         it('if user has no token, save zero value', async () => {
